@@ -2,9 +2,9 @@ import React, { useRef, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import { motion } from "framer-motion";
+const publicToken = require("./tokens.json").publicToken;
 const floridaData = require("./florida-data.json");
-mapboxgl.accessToken =
-  "pk.eyJ1IjoiZGJyb3RoZXJzIiwiYSI6ImNscTFjeGVvdzA3cGcya28weDhuajAwNzEifQ.hgbOySBM32_HZaIvC_gmKQ";
+mapboxgl.accessToken = publicToken;
 
 const App = () => {
   const thresholds = {
