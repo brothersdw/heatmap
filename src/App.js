@@ -3,12 +3,13 @@ import ReactDOM from "react-dom";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import { motion } from "framer-motion";
 const publicToken = require("./tokens.json").publicToken;
-const floridaData = require("./florida-data.json");
+const floridaData = require("./data/florida-data.json");
+const floridaCountyData = require("./data/florida-county-data.json");
 mapboxgl.accessToken = publicToken;
 
 const App = () => {
   const thresholds = {
-    property: "population",
+    property: "cases",
     stops: [
       [0, "#34dbe0"],
       [10000, "#347ce0"],
@@ -45,8 +46,9 @@ const App = () => {
     map.current.on("load", () => {
       console.log("randomcolors: ", randomColors);
       map.current.addSource("counties", {
-        type: "vector",
-        url: "mapbox://mapbox.82pkq93d",
+        type: "geojson",
+        // url: "mapbox://mapbox.82pkq93d",
+        data: floridaCountyData,
       });
 
       map.current.addLayer(
