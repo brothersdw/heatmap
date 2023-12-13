@@ -19,7 +19,8 @@ const App = () => {
     ],
   };
   const mapContainer = useRef(null);
-  const map = useRef(null);
+  // const map = useRef(null);
+  const [map, setMap] = useState(null);
   const [lng, setLng] = useState(-83.75357);
   const [lat, setLat] = useState(27.791858);
   const [mouseLocation, setMouseLocation] = useState([]);
@@ -35,85 +36,92 @@ const App = () => {
 
   const randomColors = getRandomColor();
   useEffect(() => {
-    if (map.current) return; // initialize map only once
-    map.current = new mapboxgl.Map({
+    const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/outdoors-v12",
       center: [lng, lat],
       zoom: zoom,
     });
+    map.on("load");
+    // if (map.current) return; // initialize map only once
+    // map.current = new mapboxgl.Map({
+    //   container: mapContainer.current,
+    //   style: "mapbox://styles/mapbox/outdoors-v12",
+    //   center: [lng, lat],
+    //   zoom: zoom,
+    // });
 
-    map.current.on("load", () => {
-      console.log("randomcolors: ", randomColors);
-      map.current.addSource("counties", {
-        type: "geojson",
-        // url: "mapbox://mapbox.82pkq93d",
-        data: floridaCountyData,
-      });
+    // map.current.on("load", () => {
+    //   console.log("randomcolors: ", randomColors);
+    //   map.current.addSource("counties", {
+    //     type: "geojson",
+    //     // url: "mapbox://mapbox.82pkq93d",
+    //     data: floridaCountyData,
+    //   });
 
-      map.current.addLayer(
-        {
-          id: "counties",
-          type: "fill",
-          source: "counties",
-          "source-layer": "original",
-          paint: {
-            "fill-outline-color": "rgba(93,0,213,0.8)",
-            "fill-color": "gray",
-            "fill-opacity": 0.8,
-          },
-        },
-        // before the `building` layer that is in the map from the Mapbox
-        "building"
-      );
+    //   map.current.addLayer(
+    //     {
+    //       id: "counties",
+    //       type: "fill",
+    //       source: "counties",
+    //       "source-layer": "original",
+    //       paint: {
+    //         "fill-outline-color": "rgba(93,0,213,0.8)",
+    //         "fill-color": "gray",
+    //         "fill-opacity": 0.8,
+    //       },
+    //     },
+    //     // before the `building` layer that is in the map from the Mapbox
+    //     "building"
+    //   );
 
-      map.current.setPaintProperty("counties", "fill-color", {
-        property: thresholds.property,
-        stops: thresholds.stops,
-      });
+    //   map.current.setPaintProperty("counties", "fill-color", {
+    //     property: thresholds.property,
+    //     stops: thresholds.stops,
+    //   });
 
-      map.current.on("move", () => {
-        setLng(map.current.getCenter().lng.toFixed(4));
-        setLat(map.current.getCenter().lat.toFixed(4));
-        setZoom(map.current.getZoom().toFixed(2));
-      });
-      map.current.on("mouseenter", "counties", (e) => {
-        setPopupVisible(true);
-      });
-      map.current.on("mousemove", "counties", (e) => {
-        map.current.getCanvas().style.cursor = "pointer";
+    //   map.current.on("move", () => {
+    //     setLng(map.current.getCenter().lng.toFixed(4));
+    //     setLat(map.current.getCenter().lat.toFixed(4));
+    //     setZoom(map.current.getZoom().toFixed(2));
+    //   });
+    //   map.current.on("mouseenter", "counties", (e) => {
+    //     setPopupVisible(true);
+    //   });
+    //   map.current.on("mousemove", "counties", (e) => {
+    //     map.current.getCanvas().style.cursor = "pointer";
 
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
+    //     setCursorX(e.point.x);
+    //     setCursorY(e.point.y);
 
-        if (e.features.length > 0) {
-          const feature = e.features[0];
-          const casesFound = floridaData.filter(
-            (d) => d.county === feature.properties.COUNTY
-          )[0];
-          if (casesFound) {
-            setCases((c) => casesFound);
-          } else {
-            setCases();
-          }
-          const yourX = feature.properties.COUNTY;
-          const countyLngLat = [
-            e.lngLat.lng.toFixed(4),
-            e.lngLat.lat.toFixed(4),
-          ];
-          setMouseLocation(countyLngLat);
-          setCounty(feature.properties.COUNTY);
-        }
-      });
+    //     if (e.features.length > 0) {
+    //       const feature = e.features[0];
+    //       const casesFound = floridaData.filter(
+    //         (d) => d.county === feature.properties.COUNTY
+    //       )[0];
+    //       if (casesFound) {
+    //         setCases((c) => casesFound);
+    //       } else {
+    //         setCases();
+    //       }
+    //       const yourX = feature.properties.COUNTY;
+    //       const countyLngLat = [
+    //         e.lngLat.lng.toFixed(4),
+    //         e.lngLat.lat.toFixed(4),
+    //       ];
+    //       setMouseLocation(countyLngLat);
+    //       setCounty(feature.properties.COUNTY);
+    //     }
+    //   });
 
-      map.current.on("click", "counties", (e) => {
-        console.log("Event Data: ", e.features);
-      });
-      map.current.on("mouseleave", "counties", () => {
-        map.current.getCanvas().style.cursor = "";
-        setPopupVisible(false);
-      });
-    });
+    //   map.current.on("click", "counties", (e) => {
+    //     console.log("Event Data: ", e.features);
+    //   });
+    //   map.current.on("mouseleave", "counties", () => {
+    //     map.current.getCanvas().style.cursor = "";
+    //     setPopupVisible(false);
+    //   });
+    // });
   });
 
   return (
