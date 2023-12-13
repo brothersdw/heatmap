@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "county": "Leon County",
+    "disease": "Homo Necrosis Zombifis",
+    "cases": 1000
+  },
+  {
+    "id": 2,
+    "county": "Suwannee County",
+    "disease": "Yersinia pestis",
+    "cases": 100
+  },
+  {
+    "id": 3,
+    "county": "Liberty County",
+    "disease": "Cephalalgia",
+    "cases": 500
+  },
+  {
+    "id": 4,
+    "county": "Bay County",
+    "disease": "Coulrophobia",
+    "cases": 1500
+  },
+  {
+    "id": 5,
+    "county": "Wakulla County",
+    "disease": "Stercus",
+    "cases": 50
+  },
+  {
+    "id": 6,
+    "county": "Walton County",
+    "disease": "Decidit",
+    "cases": 2000
+  },
+  {
+    "id": 7,
+    "county": "Santa Rosa County",
+    "disease": "Membrum amputatum",
+    "cases": 5000
+  }
+]
