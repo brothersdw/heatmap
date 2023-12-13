@@ -6,9 +6,6 @@ const floridaData = require("./florida-data.json");
 mapboxgl.accessToken =
   "pk.eyJ1IjoiZGJyb3RoZXJzIiwiYSI6ImNscTFjeGVvdzA3cGcya28weDhuajAwNzEifQ.hgbOySBM32_HZaIvC_gmKQ";
 
-// secret key
-// sk.eyJ1IjoiZGJyb3RoZXJzIiwiYSI6ImNscTFmOTYxYzA5aWwya243bGRyd29uamMifQ.0fopgTTMbcnKTlXBue0Yzw
-
 const App = () => {
   const thresholds = {
     property: "population",
