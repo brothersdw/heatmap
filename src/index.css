@@ -1,5 +1,9 @@
 .map-container {
-  height: 800px;
+  /* position: absolute; */
+  margin: auto;
+  height: 95vh;
+  /* margin-top: 40vw; */
+  /* width: 40vw; */
 }
 
 .map-overlay {
