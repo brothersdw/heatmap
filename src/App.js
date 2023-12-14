@@ -45,7 +45,7 @@ const App = () => {
     const thresholds = {
       property: thresholdProperty,
       stops: [
-        [0, "#34dbe0"],
+        [0, "#ebebeb"],
         [100, "#34dbe0"],
         [10000, "#347ce0"],
         [50000, "#9f37db"],
