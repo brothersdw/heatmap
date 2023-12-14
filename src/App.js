@@ -8,16 +8,6 @@ const floridaCountyData = require("./data/florida-county-data.json");
 mapboxgl.accessToken = publicToken;
 
 const App = () => {
-  const thresholds = {
-    property: "cases",
-    stops: [
-      [0, "#34dbe0"],
-      [10000, "#347ce0"],
-      [50000, "#9f37db"],
-      [100000, "#4d15a1"],
-      [200000, "#2c0566"],
-    ],
-  };
   const mapContainer = useRef(null);
   // const map = useRef(null);
   const [map, setMap] = useState(null);
@@ -30,130 +20,128 @@ const App = () => {
   const [cursorY, setCursorY] = useState();
   const [popupVisible, setPopupVisible] = useState(false);
   const [cases, setCases] = useState(0);
+  const [mapContainerBottom, setMapContainerBottom] = useState(0);
+  const [mapContainerLeft, setMapContainerLeft] = useState(0);
+  const [mapContainerRight, setMapContainerRight] = useState(0);
+  const [disease, setDisease] = useState(floridaCountyData.diseases[0].disease);
   const getRandomColor = () => {
     return `#${Math.random().toString(16).substring(2, 8)}`;
   };
 
   const randomColors = getRandomColor();
   useEffect(() => {
+    const thresholdProperty =
+      disease === "Test Disease1"
+        ? "testDisease1Cases"
+        : disease === "Test Disease2"
+        ? "testDisease2Cases"
+        : disease === "Test Disease3"
+        ? "testDisease3Cases"
+        : disease === "Test Disease4"
+        ? "testDisease4Cases"
+        : disease === "Test Disease5"
+        ? "testDisease5Cases"
+        : 0;
+    const thresholds = {
+      property: thresholdProperty,
+      stops: [
+        [0, "#34dbe0"],
+        [100, "#34dbe0"],
+        [10000, "#347ce0"],
+        [50000, "#9f37db"],
+        [100000, "#4d15a1"],
+        [200000, "#2c0566"],
+      ],
+    };
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/outdoors-v12",
       center: [lng, lat],
       zoom: zoom,
     });
-    map.on("load");
-    // if (map.current) return; // initialize map only once
-    // map.current = new mapboxgl.Map({
-    //   container: mapContainer.current,
-    //   style: "mapbox://styles/mapbox/outdoors-v12",
-    //   center: [lng, lat],
-    //   zoom: zoom,
-    // });
-
-    // map.current.on("load", () => {
-    //   console.log("randomcolors: ", randomColors);
-    //   map.current.addSource("counties", {
-    //     type: "geojson",
-    //     // url: "mapbox://mapbox.82pkq93d",
-    //     data: floridaCountyData,
-    //   });
-
-    //   map.current.addLayer(
-    //     {
-    //       id: "counties",
-    //       type: "fill",
-    //       source: "counties",
-    //       "source-layer": "original",
-    //       paint: {
-    //         "fill-outline-color": "rgba(93,0,213,0.8)",
-    //         "fill-color": "gray",
-    //         "fill-opacity": 0.8,
-    //       },
-    //     },
-    //     // before the `building` layer that is in the map from the Mapbox
-    //     "building"
-    //   );
-
-    //   map.current.setPaintProperty("counties", "fill-color", {
-    //     property: thresholds.property,
-    //     stops: thresholds.stops,
-    //   });
-
-    //   map.current.on("move", () => {
-    //     setLng(map.current.getCenter().lng.toFixed(4));
-    //     setLat(map.current.getCenter().lat.toFixed(4));
-    //     setZoom(map.current.getZoom().toFixed(2));
-    //   });
-    //   map.current.on("mouseenter", "counties", (e) => {
-    //     setPopupVisible(true);
-    //   });
-    //   map.current.on("mousemove", "counties", (e) => {
-    //     map.current.getCanvas().style.cursor = "pointer";
-
-    //     setCursorX(e.point.x);
-    //     setCursorY(e.point.y);
-
-    //     if (e.features.length > 0) {
-    //       const feature = e.features[0];
-    //       const casesFound = floridaData.filter(
-    //         (d) => d.county === feature.properties.COUNTY
-    //       )[0];
-    //       if (casesFound) {
-    //         setCases((c) => casesFound);
-    //       } else {
-    //         setCases();
-    //       }
-    //       const yourX = feature.properties.COUNTY;
-    //       const countyLngLat = [
-    //         e.lngLat.lng.toFixed(4),
-    //         e.lngLat.lat.toFixed(4),
-    //       ];
-    //       setMouseLocation(countyLngLat);
-    //       setCounty(feature.properties.COUNTY);
-    //     }
-    //   });
-
-    //   map.current.on("click", "counties", (e) => {
-    //     console.log("Event Data: ", e.features);
-    //   });
-    //   map.current.on("mouseleave", "counties", () => {
-    //     map.current.getCanvas().style.cursor = "";
-    //     setPopupVisible(false);
-    //   });
-    // });
-  });
+    map.on("load", () => {
+      map.addSource("counties", {
+        type: "geojson",
+        data: floridaCountyData,
+      });
+      map.addLayer(
+        {
+          id: "counties",
+          type: "fill",
+          source: "counties",
+        },
+        "building"
+      );
+      map.setPaintProperty("counties", "fill-color", {
+        property: thresholds.property,
+        stops: thresholds.stops,
+        opacity: 0.4,
+      });
+      map.on("move", "counties", () => {
+        setLng(map.getCenter().lng.toFixed(4));
+        setLat(map.getCenter().lat.toFixed(4));
+        setZoom(map.getZoom().toFixed(2));
+      });
+      map.on("mouseenter", "counties", () => {
+        setPopupVisible(true);
+      });
+      map.on("mousemove", "counties", (e) => {
+        setCursorX(e.point.x);
+        setCursorY(e.point.y);
+        // console.log(e.features[0].properties);
+        setCounty(e.features[0].properties.county);
+        setCases();
+      });
+      map.on("mouseleave", "counties", () => {
+        setPopupVisible(false);
+      });
+      const mapContainerElement = document.getElementById("map-container");
+      console.log(mapContainerElement.offsetHeight);
+      setMapContainerBottom(
+        mapContainerElement.offsetHeight + mapContainerElement.offsetTop
+      );
+      setMapContainerLeft(mapContainerElement.offsetLeft);
+      setMapContainerRight(mapContainerElement.offsetWidth);
+      setMap(map);
+    });
+    console.log("mapContainerHeight: ", mapContainerBottom);
+    return () => map.remove();
+  }, [disease]);
 
   return (
-    <div>
-      <Legend />
+    <div style={{ position: "relative", height: "auto" }}>
+      <Legend mapTopPos={mapContainerBottom} mapLeftPos={mapContainerRight} />
       {popupVisible && (
-        <>
-          <PopUp
-            county={county}
-            cursorX={cursorX}
-            cursorY={cursorY}
-            display={popupVisible}
-            cases={cases}
-          />
-          <div className="data-box">
-            <p>Longitude: {lng}</p>
-            <p>Latitude: {lat}</p>
-            <p style={{ marginRight: "50px" }}>Zoom: {zoom}</p>
-            <p>
-              Mouse Move:
-              {mouseLocation.map((m, idx) => {
-                if (mouseLocation.length !== idx + 1) {
-                  return " " + m + ", ";
-                } else return m;
-              })}{" "}
-            </p>
-            <p>County: {county}</p>
-            <p>Cases: {cases ? cases.cases : 0}</p>
-          </div>
-        </>
+        <PopUp
+          county={county}
+          cursorX={cursorX}
+          cursorY={cursorY}
+          display={popupVisible}
+          cases={cases}
+        />
       )}
-      <div ref={mapContainer} className="map-container" />
+      <div className="data-box">
+        <p>Longitude: {lng}</p>
+        <p>Latitude: {lat}</p>
+        <p style={{ marginRight: "50px" }}>Zoom: {zoom}</p>
+        <p>
+          Mouse Move:
+          {mouseLocation.map((m, idx) => {
+            if (mouseLocation.length !== idx + 1) {
+              return " " + m + ", ";
+            } else return m;
+          })}{" "}
+        </p>
+        <p>County: {county}</p>
+        <p>Cases: {cases ? cases.cases : 0}</p>
+      </div>
+      <DiseaseDropDown
+        mapLeftPos={mapContainerLeft}
+        mapTopPos={mapContainerBottom}
+        disease={disease}
+        setDisease={setDisease}
+      />
+      <div ref={mapContainer} id="map-container" className="map-container" />
     </div>
   );
 };
@@ -178,7 +166,7 @@ const PopUp = ({ county, cursorX, cursorY, cases }) => {
   );
 };
 
-const Legend = () => {
+const Legend = ({ mapTopPos, mapLeftPos }) => {
   const legendItems = [
     { thresholdColor: "#34dbe0", numberOfPeople: 0 },
     { thresholdColor: "#347ce0", numberOfPeople: 10000 },
@@ -190,32 +178,70 @@ const Legend = () => {
     <div
       className="legend-container"
       style={{
-        marginLeft: "80vw",
-        marginTop: "60vh",
+        // marginLeft: "80vw",
+        // marginTop: "60vh",
+        top: `${mapTopPos - 290}px`,
+        left: `${mapLeftPos - 230}px`,
         width: "200px",
-        backgroundColor: "white",
+        // backgroundColor: "white",
+        backgroundColor: "rgba(58, 58, 58, .6)",
         padding: "10px",
+        color: "white",
         position: "absolute",
+        border: "4px solid #9469d4",
       }}
     >
-      <p>Population</p>
-      {legendItems.map((item) => {
+      <h3 style={{ textAlign: "center" }}>Disease Cases</h3>
+      {legendItems.map((item, idx) => {
         return (
-          <p>
+          <p key={`legend-p-item-${idx}`} style={{ paddingBottom: "5px" }}>
             <span
+              key={`legend-span-item-${idx}`}
               style={{
                 height: "5px",
-                padding: "5px",
+                paddingTop: "1px",
+                paddingLeft: "10px",
+                paddingRight: "10px",
+                paddingBottom: "1px",
                 borderRadius: "20px",
                 backgroundColor: item.thresholdColor,
                 margin: "10px",
               }}
             ></span>
-            <span>{item.numberOfPeople}</span>
+            <span>{item.numberOfPeople}+</span>
           </p>
         );
       })}
     </div>
+  );
+};
+
+const DiseaseDropDown = ({ mapLeftPos, mapTopPos, disease, setDisease }) => {
+  const dropDownStyle = {
+    width: "200px",
+    textAlign: "center",
+    position: "absolute",
+    padding: "10px",
+    backgroundColor: "#147eff",
+    color: "white",
+    top: `${mapTopPos - 50}px`,
+    left: mapLeftPos,
+  };
+  console.log("mapTopPos", mapTopPos);
+  return (
+    <select
+      value={disease}
+      onChange={(e) => setDisease(e.target.value)}
+      style={dropDownStyle}
+    >
+      {floridaCountyData.diseases.map((item, idx) => {
+        return (
+          <option style={{ textAlign: "center" }} value={item.disease}>
+            {item.disease}
+          </option>
+        );
+      })}
+    </select>
   );
 };
 
