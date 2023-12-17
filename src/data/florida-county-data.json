@@ -11,7 +11,7 @@
     {
       "type": "Feature",
       "properties": {
-        "testDisease1Cases": 500,
+        "testDisease1Cases": 0,
         "testDisease2Cases": 50000,
         "testDisease3Cases": 100000,
         "testDisease4Cases": 200000,
