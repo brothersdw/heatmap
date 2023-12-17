@@ -1,15 +1,18 @@
 import React, { useRef, useEffect, useState } from "react";
+import { getMapData } from "./api/get-mapbox-data";
+import { getDiseases } from "./api/get-diseases";
 import ReactDOM from "react-dom";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import { motion } from "framer-motion";
+import axios from "axios";
 const publicToken = require("./tokens.json").publicToken;
 const floridaData = require("./data/florida-data.json");
 const floridaCountyData = require("./data/florida-county-data.json");
+const diseases = await getDiseases();
+const diseasesData = diseases.data;
 mapboxgl.accessToken = publicToken;
-
 const App = () => {
   const mapContainer = useRef(null);
-  // const map = useRef(null);
   const [map, setMap] = useState(null);
   const [lng, setLng] = useState(-83.75357);
   const [lat, setLat] = useState(27.791858);
@@ -19,31 +22,19 @@ const App = () => {
   const [cursorX, setCursorX] = useState();
   const [cursorY, setCursorY] = useState();
   const [popupVisible, setPopupVisible] = useState(false);
-  const [cases, setCases] = useState(0);
+  const [cases, setCases] = useState({});
   const [mapContainerBottom, setMapContainerBottom] = useState(0);
   const [mapContainerLeft, setMapContainerLeft] = useState(0);
   const [mapContainerRight, setMapContainerRight] = useState(0);
-  const [disease, setDisease] = useState(floridaCountyData.diseases[0].disease);
+  const [disease, setDisease] = useState(diseases.data[0].disease_cases_key);
   const getRandomColor = () => {
     return `#${Math.random().toString(16).substring(2, 8)}`;
   };
 
   const randomColors = getRandomColor();
   useEffect(() => {
-    const thresholdProperty =
-      disease === "Test Disease1"
-        ? "testDisease1Cases"
-        : disease === "Test Disease2"
-        ? "testDisease2Cases"
-        : disease === "Test Disease3"
-        ? "testDisease3Cases"
-        : disease === "Test Disease4"
-        ? "testDisease4Cases"
-        : disease === "Test Disease5"
-        ? "testDisease5Cases"
-        : 0;
     const thresholds = {
-      property: thresholdProperty,
+      property: disease,
       stops: [
         [0, "#ebebeb"],
         [100, "#34dbe0"],
@@ -59,54 +50,72 @@ const App = () => {
       center: [lng, lat],
       zoom: zoom,
     });
-    map.on("load", () => {
-      map.addSource("counties", {
-        type: "geojson",
-        data: floridaCountyData,
+    const renderMap = async () => {
+      const mData = await getMapData();
+      const mapData = await mData.data;
+      map.on("load", () => {
+        map.addSource("counties", {
+          type: "geojson",
+          data: mapData,
+        });
+        map.addLayer(
+          {
+            id: "counties",
+            type: "fill",
+            source: "counties",
+          },
+          "building"
+        );
+        map.setPaintProperty("counties", "fill-color", {
+          property: thresholds.property,
+          stops: thresholds.stops,
+          opacity: 0.4,
+        });
+        map.on("move", "counties", () => {
+          setLng(map.getCenter().lng.toFixed(4));
+          setLat(map.getCenter().lat.toFixed(4));
+          setZoom(map.getZoom().toFixed(2));
+        });
+        map.on("mouseenter", "counties", () => {
+          setPopupVisible(true);
+        });
+        map.on("mousemove", "counties", (e) => {
+          setCursorX(e.point.x);
+          setCursorY(e.point.y);
+          setCounty(e.features[0].properties.county);
+          const diseaseCases = e.features[0].properties[`${disease}`];
+          const disease_data = diseases.data.filter(
+            (d) => d.disease_cases_key === disease
+          );
+          const disease_description = disease_data[0].disease_description;
+          setCases((c) => {
+            return {
+              ...c,
+              cases: diseaseCases,
+              disease: disease_description,
+            };
+          });
+        });
+        map.on("mouseleave", "counties", () => {
+          setPopupVisible(false);
+        });
+        setMap(map);
       });
-      map.addLayer(
-        {
-          id: "counties",
-          type: "fill",
-          source: "counties",
-        },
-        "building"
-      );
-      map.setPaintProperty("counties", "fill-color", {
-        property: thresholds.property,
-        stops: thresholds.stops,
-        opacity: 0.4,
-      });
-      map.on("move", "counties", () => {
-        setLng(map.getCenter().lng.toFixed(4));
-        setLat(map.getCenter().lat.toFixed(4));
-        setZoom(map.getZoom().toFixed(2));
-      });
-      map.on("mouseenter", "counties", () => {
-        setPopupVisible(true);
-      });
-      map.on("mousemove", "counties", (e) => {
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-        // console.log(e.features[0].properties);
-        setCounty(e.features[0].properties.county);
-        setCases();
-      });
-      map.on("mouseleave", "counties", () => {
-        setPopupVisible(false);
-      });
-      const mapContainerElement = document.getElementById("map-container");
-      console.log(mapContainerElement.offsetHeight);
-      setMapContainerBottom(
-        mapContainerElement.offsetHeight + mapContainerElement.offsetTop
-      );
-      setMapContainerLeft(mapContainerElement.offsetLeft);
-      setMapContainerRight(mapContainerElement.offsetWidth);
-      setMap(map);
-    });
-    console.log("mapContainerHeight: ", mapContainerBottom);
+    };
+    // };
+    renderMap();
+
     return () => map.remove();
   }, [disease]);
+  const mapHeight = mapContainer;
+  useEffect(() => {
+    const mapContainerElement = document.getElementById("map-container");
+    setMapContainerBottom(
+      mapContainerElement.offsetHeight + mapContainerElement.offsetTop
+    );
+    setMapContainerLeft(mapContainerElement.offsetLeft);
+    setMapContainerRight(mapContainerElement.offsetWidth);
+  });
 
   return (
     <div style={{ position: "relative", height: "auto" }}>
@@ -150,7 +159,7 @@ const PopUp = ({ county, cursorX, cursorY, cases }) => {
   const style = {
     left: `${cursorX - (cases ? 80 : 60)}px`,
     top: `${cursorY - (cases ? 80 : 45)}px`,
-    backgroundColor: "white",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     position: "absolute",
     padding: "10px",
     borderRadius: "10px",
@@ -161,6 +170,8 @@ const PopUp = ({ county, cursorX, cursorY, cases }) => {
         <span>{county}</span>
         {cases && <span>Cases: {cases.cases}</span>}
         {cases && <span>Disease: {cases.disease}</span>}
+        {/* <span>Cases: {cases.cases}</span>
+        <span>Disease: {cases.disease}</span> */}
       </div>
     </div>
   );
@@ -168,7 +179,8 @@ const PopUp = ({ county, cursorX, cursorY, cases }) => {
 
 const Legend = ({ mapTopPos, mapLeftPos }) => {
   const legendItems = [
-    { thresholdColor: "#34dbe0", numberOfPeople: 0 },
+    { thresholdColor: "#ebebeb", numberOfPeople: 0 },
+    { thresholdColor: "#34dbe0", numberOfPeople: 100 },
     { thresholdColor: "#347ce0", numberOfPeople: 10000 },
     { thresholdColor: "#9f37db", numberOfPeople: 50000 },
     { thresholdColor: "#4d15a1", numberOfPeople: 100000 },
@@ -180,7 +192,7 @@ const Legend = ({ mapTopPos, mapLeftPos }) => {
       style={{
         // marginLeft: "80vw",
         // marginTop: "60vh",
-        top: `${mapTopPos - 290}px`,
+        top: `${mapTopPos - 325}px`,
         left: `${mapLeftPos - 230}px`,
         width: "200px",
         // backgroundColor: "white",
@@ -227,17 +239,19 @@ const DiseaseDropDown = ({ mapLeftPos, mapTopPos, disease, setDisease }) => {
     top: `${mapTopPos - 50}px`,
     left: mapLeftPos,
   };
-  console.log("mapTopPos", mapTopPos);
   return (
     <select
       value={disease}
       onChange={(e) => setDisease(e.target.value)}
       style={dropDownStyle}
     >
-      {floridaCountyData.diseases.map((item, idx) => {
+      {diseases.data.map((item, idx) => {
         return (
-          <option style={{ textAlign: "center" }} value={item.disease}>
-            {item.disease}
+          <option
+            style={{ textAlign: "center" }}
+            value={item.disease_cases_key}
+          >
+            {item.disease_description}
           </option>
         );
       })}
