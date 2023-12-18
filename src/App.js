@@ -10,6 +10,9 @@ const floridaData = require("./data/florida-data.json");
 const floridaCountyData = require("./data/florida-county-data.json");
 const diseases = await getDiseases();
 const diseasesData = diseases.data;
+const mData = await getMapData();
+const mapData = await mData.data;
+
 mapboxgl.accessToken = publicToken;
 const App = () => {
   const mapContainer = useRef(null);
@@ -50,9 +53,7 @@ const App = () => {
       center: [lng, lat],
       zoom: zoom,
     });
-    const renderMap = async () => {
-      const mData = await getMapData();
-      const mapData = await mData.data;
+    const renderMap = () => {
       map.on("load", () => {
         map.addSource("counties", {
           type: "geojson",
