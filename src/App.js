@@ -1,22 +1,17 @@
 import React, { useRef, useEffect, useState } from "react";
 import { getMapData } from "./api/get-mapbox-data";
 import { getDiseases } from "./api/get-diseases";
-import ReactDOM from "react-dom";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
-import { motion } from "framer-motion";
-import axios from "axios";
-const publicToken = require("./tokens.json").publicToken;
-const floridaData = require("./data/florida-data.json");
-const floridaCountyData = require("./data/florida-county-data.json");
+import "mapbox-gl/dist/mapbox-gl.css";
+const publicToken = require("./tokens.json").publicToken; // Can exchange this for your own mapbox token
 const diseases = await getDiseases();
-const diseasesData = diseases.data;
 const mData = await getMapData();
 const mapData = await mData.data;
 
 mapboxgl.accessToken = publicToken;
 const App = () => {
   const mapContainer = useRef(null);
-  const [map, setMap] = useState(null);
+  // const [map, setMap] = useState(null);
   const [lng, setLng] = useState(-83.75357);
   const [lat, setLat] = useState(27.791858);
   const [mouseLocation, setMouseLocation] = useState([]);
@@ -53,58 +48,53 @@ const App = () => {
       center: [lng, lat],
       zoom: zoom,
     });
-    const renderMap = () => {
-      map.on("load", () => {
-        map.addSource("counties", {
-          type: "geojson",
-          data: mapData,
-        });
-        map.addLayer(
-          {
-            id: "counties",
-            type: "fill",
-            source: "counties",
-          },
-          "building"
-        );
-        map.setPaintProperty("counties", "fill-color", {
-          property: thresholds.property,
-          stops: thresholds.stops,
-          opacity: 0.4,
-        });
-        map.on("move", "counties", () => {
-          setLng(map.getCenter().lng.toFixed(4));
-          setLat(map.getCenter().lat.toFixed(4));
-          setZoom(map.getZoom().toFixed(2));
-        });
-        map.on("mouseenter", "counties", () => {
-          setPopupVisible(true);
-        });
-        map.on("mousemove", "counties", (e) => {
-          setCursorX(e.point.x);
-          setCursorY(e.point.y);
-          setCounty(e.features[0].properties.county);
-          const diseaseCases = e.features[0].properties[`${disease}`];
-          const disease_data = diseases.data.filter(
-            (d) => d.disease_cases_key === disease
-          );
-          const disease_description = disease_data[0].disease_description;
-          setCases((c) => {
-            return {
-              ...c,
-              cases: diseaseCases,
-              disease: disease_description,
-            };
-          });
-        });
-        map.on("mouseleave", "counties", () => {
-          setPopupVisible(false);
-        });
-        setMap(map);
+    map.on("load", () => {
+      map.addSource("counties", {
+        type: "geojson",
+        data: mapData,
       });
-    };
-    // };
-    renderMap();
+      map.addLayer(
+        {
+          id: "counties",
+          type: "fill",
+          source: "counties",
+        },
+        "building"
+      );
+      map.setPaintProperty("counties", "fill-color", {
+        property: thresholds.property,
+        stops: thresholds.stops,
+      });
+      map.on("move", "counties", () => {
+        setLng(map.getCenter().lng.toFixed(4));
+        setLat(map.getCenter().lat.toFixed(4));
+        setZoom(map.getZoom().toFixed(2));
+      });
+      map.on("mouseenter", "counties", () => {
+        setPopupVisible(true);
+      });
+      map.on("mousemove", "counties", (e) => {
+        setCursorX(e.point.x);
+        setCursorY(e.point.y);
+        setCounty(e.features[0].properties.county);
+        const diseaseCases = e.features[0].properties[`${disease}`];
+        const disease_data = diseases.data.filter(
+          (d) => d.disease_cases_key === disease
+        );
+        const disease_description = disease_data[0].disease_description;
+        setCases((c) => {
+          return {
+            ...c,
+            cases: diseaseCases,
+            disease: disease_description,
+          };
+        });
+      });
+      map.on("mouseleave", "counties", () => {
+        setPopupVisible(false);
+      });
+      // setMap(map);
+    });
 
     return () => map.remove();
   }, [disease]);
@@ -130,7 +120,7 @@ const App = () => {
           cases={cases}
         />
       )}
-      <div className="data-box">
+      <div className="data-box" style={{ zIndex: 2 }}>
         <p>Longitude: {lng}</p>
         <p>Latitude: {lat}</p>
         <p style={{ marginRight: "50px" }}>Zoom: {zoom}</p>
@@ -164,6 +154,7 @@ const PopUp = ({ county, cursorX, cursorY, cases }) => {
     position: "absolute",
     padding: "10px",
     borderRadius: "10px",
+    zIndex: 2,
   };
   return (
     <div style={{ position: "relative" }}>
@@ -193,7 +184,7 @@ const Legend = ({ mapTopPos, mapLeftPos }) => {
       style={{
         // marginLeft: "80vw",
         // marginTop: "60vh",
-        top: `${mapTopPos - 325}px`,
+        top: `${mapTopPos - 345}px`,
         left: `${mapLeftPos - 230}px`,
         width: "200px",
         // backgroundColor: "white",
@@ -202,6 +193,7 @@ const Legend = ({ mapTopPos, mapLeftPos }) => {
         color: "white",
         position: "absolute",
         border: "4px solid #9469d4",
+        zIndex: 2,
       }}
     >
       <h3 style={{ textAlign: "center" }}>Disease Cases</h3>
@@ -237,8 +229,9 @@ const DiseaseDropDown = ({ mapLeftPos, mapTopPos, disease, setDisease }) => {
     padding: "10px",
     backgroundColor: "#147eff",
     color: "white",
-    top: `${mapTopPos - 50}px`,
+    top: `${mapTopPos - 68}px`,
     left: mapLeftPos,
+    zIndex: 2,
   };
   return (
     <select
@@ -249,6 +242,7 @@ const DiseaseDropDown = ({ mapLeftPos, mapTopPos, disease, setDisease }) => {
       {diseases.data.map((item, idx) => {
         return (
           <option
+            key={item.disease_cases_key}
             style={{ textAlign: "center" }}
             value={item.disease_cases_key}
           >
