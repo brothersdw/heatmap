@@ -1,7 +1,7 @@
 export const MapPopup = ({ county, cursorX, cursorY, cases }) => {
   const style = {
     left: `${cursorX - (cases ? 80 : 60)}px`,
-    top: `${cursorY - (cases ? 80 : 45)}px`,
+    top: `${cursorY - (cases ? 85 : 45)}px`,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     position: "absolute",
     padding: "10px",
@@ -14,8 +14,6 @@ export const MapPopup = ({ county, cursorX, cursorY, cases }) => {
         <span>{county}</span>
         {cases && <span>Cases: {cases.cases}</span>}
         {cases && <span>Disease: {cases.disease}</span>}
-        {/* <span>Cases: {cases.cases}</span>
-          <span>Disease: {cases.disease}</span> */}
       </div>
     </div>
   );

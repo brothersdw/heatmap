@@ -71,8 +71,9 @@ export const HeatMap = () => {
         setLat(map.getCenter().lat.toFixed(4));
         setZoom(map.getZoom().toFixed(2));
       });
-      map.on("mouseenter", "counties", () => {
+      map.on("mouseenter", "counties", (e) => {
         setPopupVisible(true);
+        map.getCanvas().style.cursor = "pointer";
       });
       map.on("mousemove", "counties", (e) => {
         setCursorX(e.point.x);
@@ -93,6 +94,7 @@ export const HeatMap = () => {
       });
       map.on("mouseleave", "counties", () => {
         setPopupVisible(false);
+        map.getCanvas().style.cursor = "grab";
       });
       // setMap(map);
     });
