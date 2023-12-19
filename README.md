@@ -7,7 +7,7 @@
 ### Installing dependencies
 
 - You will first need to make sure that you have also cloned the `heatmap-api` and have it running before starting this frontend.
-- To install all dependencies for frontend run `npm install` while in the `heatmap`` parent directory.
+- To install all dependencies for frontend run `npm install` while in the `heatmap` parent directory.
 
 ### Mapbox Token
 
@@ -17,7 +17,7 @@
   - You can create a `tokens.json` file in the `src` directory:
 
   - `{"publicToken": "<your token>"}`
-  - Or you can replace the `publicToken` value in the /src/components/heat-map/heat-map.js file with your token directly.
+  - Or you can replace the `publicToken` value in the `/src/components/heat-map/heat-map.js` file with your token directly.
 
 ### Start Heatmap frontend
 
