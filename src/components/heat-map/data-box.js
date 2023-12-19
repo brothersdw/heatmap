@@ -1,4 +1,5 @@
-export const DataBox = (lng, lat, county, cases, zoom) => {
+export const DataBox = ({ lng, lat, county, cases, zoom }) => {
+  console.log("lng", lng);
   return (
     <div className="data-box" style={{ zIndex: 2 }}>
       <p>Longitude: {lng}</p>

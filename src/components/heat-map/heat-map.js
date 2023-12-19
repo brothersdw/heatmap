@@ -3,7 +3,7 @@ import { getMapData } from "../../api/get-mapbox-data";
 import { getDiseases } from "../../api/get-diseases";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import "mapbox-gl/dist/mapbox-gl.css";
-import { DiseaseDropDown, MapPopup, Legend, DataBox } from "./";
+import { DiseaseDropDown, MapPopup, Legend, DataBox } from ".";
 const publicToken = require("../../tokens.json").publicToken; // Can exchange this for your own mapbox token
 const diseases = await getDiseases();
 const mData = await getMapData();

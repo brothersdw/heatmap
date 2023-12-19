@@ -1,1 +1,1 @@
-export * from "./county-boundary-map/";
+export * from "./heat-map";
