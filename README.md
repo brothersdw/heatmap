@@ -2,7 +2,9 @@
 
 ## Getting started
 
-- `get clone https://github.com/brothersdw/heatmap.git`
+```
+get clone https://github.com/brothersdw/heatmap.git
+```
 
 ### Installing dependencies
 
