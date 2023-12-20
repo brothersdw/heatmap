@@ -11,12 +11,9 @@ export const Legend = ({ mapTopPos, mapLeftPos }) => {
     <div
       className="legend-container"
       style={{
-        // marginLeft: "80vw",
-        // marginTop: "60vh",
         top: `${mapTopPos - 345}px`,
         left: `${mapLeftPos - 230}px`,
         width: "200px",
-        // backgroundColor: "white",
         backgroundColor: "rgba(58, 58, 58, .6)",
         padding: "10px",
         color: "white",
