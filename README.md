@@ -23,7 +23,7 @@ git clone https://github.com/brothersdw/heatmap.git
 
 ### Start Heatmap frontend
 
-- All you need to do to bring up frontend is run the following command `npm start`
+- To bring up frontend is run the following command `npm start`
 - After you run that command you should have a working heatmap for the state of Florida as seen below:
 
 ![image](./public/heatmapexample.png)
