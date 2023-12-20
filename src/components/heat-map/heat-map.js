@@ -58,6 +58,9 @@ export const HeatMap = () => {
         {
           id: "counties",
           type: "fill",
+          paint: {
+            "fill-outline-color": "white",
+          },
           source: "counties",
         },
         "building"
