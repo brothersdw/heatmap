@@ -1,7 +1,7 @@
 import axios from "axios";
 const mapdataUrl = "http://localhost:3008/get-florida-mapbox-data";
 
-export const getMapData = async () => {
+export const getCountyMapData = async () => {
   const response = await axios
     .get(mapdataUrl, { timeout: 5000 })
     .then((result) => result)
