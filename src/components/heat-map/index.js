@@ -1,6 +1,6 @@
-export { DiseaseDropDown } from "./disease-dropdown";
+export { SelectDropDown } from "./select-dropdown";
 export { MapPopup } from "./map-popup";
-export { Legend } from "./legend";
+// export { Legend } from "./legend";
 export { HeatMap } from "./heat-map";
 export { DataBox } from "./data-box";
 export { LeftPanel } from "./map-left-panel";

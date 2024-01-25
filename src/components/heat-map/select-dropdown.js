@@ -5,14 +5,15 @@ import {
   EuiButton,
 } from "@elastic/eui";
 import { useState } from "react";
-export const DiseaseDropDown = ({
+export const SelectDropDown = ({
   // Grabbing props from HeatMap component
   dropDownOptions,
+  value,
   setValue,
 }) => {
   const [options, setOptions] = useState(dropDownOptions);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [popOverTitle, setPopOverTitle] = useState(dropDownOptions[0].label);
+  const [popOverTitle, setPopOverTitle] = useState(value);
   return (
     /* Selection dropdown for various diseases. The disease state is passed down from the HeatMap component
            and must stay there as it reloads the HeatMap based on the disease state. */
