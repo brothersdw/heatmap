@@ -22,6 +22,22 @@ export const LeftPanel = ({
       setCasesSwitch(false);
     }
   });
+  const dropDownOptions = diseases.data.map((item, idx) => {
+    // Map through diseases and return value and description of each disease
+    return {
+      label: item.disease_description,
+      value: item.disease_cases_key,
+    };
+    //   <option
+    //     key={item.disease_cases_key}
+    //     style={{ textAlign: "center" }}
+    //     value={item.disease_cases_key} // Value of each option. A new selection will change the state of disease
+    //   >
+    //     {item.disease_description}
+    //     {/* Disease description. This is what is seen in the box when selected */}
+    //   </option>
+    // );
+  });
   return (
     <div
       className="left-panel-container"
@@ -52,9 +68,8 @@ export const LeftPanel = ({
           <DiseaseDropDown
             //   mapLeftPos={mapContainerLeft}
             //   mapTopPos={mapContainerBottom}
-            disease={disease}
-            setDisease={setDisease}
-            diseases={diseases}
+            setValue={setDisease}
+            dropDownOptions={dropDownOptions}
           />
         )}
         {casesSwitch ? (
