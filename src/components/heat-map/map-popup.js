@@ -1,8 +1,8 @@
-export const MapPopup = ({ county, cursorX, cursorY, cases }) => {
+export const MapPopup = ({ county, cursorX, cursorY, popupValuesObj }) => {
   const style = {
     // !IMPORTANT: The left and top is dynamic and based on the states of cursorX and cursorY which are set in the HeatMap component
-    left: `${cursorX - (cases ? 80 : 60)}px`,
-    top: `${cursorY - (cases ? 85 : 45)}px`,
+    left: `${cursorX - (popupValuesObj ? 80 : 60)}px`,
+    top: `${cursorY - (popupValuesObj ? 85 : 45)}px`,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     position: "absolute",
     padding: "10px",
@@ -12,8 +12,15 @@ export const MapPopup = ({ county, cursorX, cursorY, cases }) => {
   return (
     <div className="popup" style={style}>
       <span>{county}</span>
-      {cases && <span>Cases: {cases.cases}</span>}
-      {cases && <span>Disease: {cases.disease}</span>}
+      {/* {cases && <span>Cases: {cases.cases}</span>}
+      {cases && <span>Disease: {cases.disease}</span>} */}
+      {Object.keys(popupValuesObj).map((ok, idx) => {
+        return (
+          <span key={`ok-${idx}`}>
+            {ok}: {popupValuesObj[ok]}
+          </span>
+        );
+      })}
     </div>
   );
 };

@@ -1,0 +1,49 @@
+.switch-label {
+  color: white;
+  display: inline-block;
+  margin: 10px;
+}
+
+.switch {
+  width: 44px;
+  height: 24px;
+  border-radius: 30px;
+  display: inline-block;
+  cursor: pointer;
+  /* border: 2px solid #ffffff; */
+}
+
+.switch-red {
+  background-color: #f96262;
+  transition: 0.5s;
+}
+
+.switch-green {
+  background-color: #23be42;
+  transition: 0.5s;
+}
+
+.slider {
+  width: 20px;
+  height: 20px;
+  /* bottom: 2px; */
+  display: block;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background-color: #dcdcdc;
+  position: relative;
+}
+
+.slider-left {
+  left: 0;
+  transition: 0.5s;
+}
+
+.slider-right {
+  left: 20px;
+  transition: 0.5s;
+}
+
+.test {
+  background-color: #14595c;
+}
