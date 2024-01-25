@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DiseaseDropDown, ColorBarLegend, ToggleSwitch } from ".";
+import { SelectDropDown, ColorBarLegend, ToggleSwitch } from ".";
 export const LeftPanel = ({
   zoom,
   disease,
@@ -38,6 +38,8 @@ export const LeftPanel = ({
     //   </option>
     // );
   });
+  const dropDownValue = dropDownOptions.filter((d) => d.value === disease)[0]
+    .label;
   return (
     <div
       className="left-panel-container"
@@ -65,10 +67,11 @@ export const LeftPanel = ({
           setToggleSwitch={setCasesSwitch}
         />
         {casesSwitch && (
-          <DiseaseDropDown
+          <SelectDropDown
             //   mapLeftPos={mapContainerLeft}
             //   mapTopPos={mapContainerBottom}
             setValue={setDisease}
+            value={dropDownValue}
             dropDownOptions={dropDownOptions}
           />
         )}
