@@ -28,18 +28,11 @@ export const LeftPanel = ({
       label: item.disease_description,
       value: item.disease_cases_key,
     };
-    //   <option
-    //     key={item.disease_cases_key}
-    //     style={{ textAlign: "center" }}
-    //     value={item.disease_cases_key} // Value of each option. A new selection will change the state of disease
-    //   >
-    //     {item.disease_description}
-    //     {/* Disease description. This is what is seen in the box when selected */}
-    //   </option>
-    // );
   });
+
   const dropDownValue = dropDownOptions.filter((d) => d.value === disease)[0]
     .label;
+
   return (
     <div
       className="left-panel-container"
@@ -68,8 +61,6 @@ export const LeftPanel = ({
         />
         {casesSwitch && (
           <SelectDropDown
-            //   mapLeftPos={mapContainerLeft}
-            //   mapTopPos={mapContainerBottom}
             setValue={setDisease}
             value={dropDownValue}
             dropDownOptions={dropDownOptions}
