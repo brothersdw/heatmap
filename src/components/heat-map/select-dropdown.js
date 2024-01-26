@@ -1,6 +1,6 @@
 import { EuiSelectable, EuiPopover, EuiButton } from "@elastic/eui";
 import { useState } from "react";
-import "./select-dropdown-css.css";
+// import "./select-dropdown-css.css";
 export const SelectDropDown = ({
   // Grabbing props from HeatMap component
   dropDownOptions,
@@ -55,9 +55,9 @@ export const SelectDropDown = ({
           }}
         >
           {(list, search) => (
-            <div>
+            <div className="search-list-container">
               <div className="search-container">{search}</div>
-              <div style={{ paddingBottom: "20px" }}>{list}</div>
+              <div className="list-items">{list}</div>
             </div>
           )}
         </EuiSelectable>
