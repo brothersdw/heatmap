@@ -1,3 +1,4 @@
+// import "./heat-map";
 export const ColorBarLegend = ({ rangeNum1, rangeNum2, colors, title }) => {
   const gradientColors = colors;
   let colorString;
