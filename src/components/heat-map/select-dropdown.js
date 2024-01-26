@@ -1,10 +1,6 @@
-import {
-  EuiSelectable,
-  EuiSuperSelect,
-  EuiPopover,
-  EuiButton,
-} from "@elastic/eui";
+import { EuiSelectable, EuiPopover, EuiButton } from "@elastic/eui";
 import { useState } from "react";
+import "./select-dropdown-css.css";
 export const SelectDropDown = ({
   // Grabbing props from HeatMap component
   dropDownOptions,
@@ -14,25 +10,20 @@ export const SelectDropDown = ({
   const [options, setOptions] = useState(dropDownOptions);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popOverTitle, setPopOverTitle] = useState(value);
+
   return (
     /* Selection dropdown for various diseases. The disease state is passed down from the HeatMap component
            and must stay there as it reloads the HeatMap based on the disease state. */
 
-    <div
-      className="select-dropdown-container"
-      style={{ width: "80%", margin: "auto" }}
-    >
+    <div className="select-dropdown-container">
       <EuiPopover
-        style={{
-          width: "100%",
-          // margin: "auto",
-          // backgroundColor: "white",
-          // textAlign: "center",
-        }}
+        className="select-popover"
         panelPaddingSize="none"
         button={
           <EuiButton
-            style={{ width: "100%", margin: "auto" }}
+            style={{
+              textDecoration: "none",
+            }}
             iconType="arrowDown"
             iconSide="right"
             onClick={() => setIsPopoverOpen(!isPopoverOpen)}
@@ -44,14 +35,8 @@ export const SelectDropDown = ({
         closePopover={() => setIsPopoverOpen(false)}
       >
         <EuiSelectable
+          className="select-options"
           aria-label="Searchable Dropdown"
-          style={{
-            width: "100%",
-            padding: "30px",
-            // margin: "auto",
-            backgroundColor: "white",
-            textAlign: "center",
-          }}
           options={options}
           onChange={(newOptions) => {
             console.log("test dropdown:", newOptions);
@@ -64,7 +49,6 @@ export const SelectDropDown = ({
             }
           }}
           searchable
-          // valueOfSelected={options[0]}
           singleSelection
           searchProps={{
             label: "",
@@ -72,7 +56,7 @@ export const SelectDropDown = ({
         >
           {(list, search) => (
             <div>
-              <div style={{ paddingBottom: "20px" }}>{search}</div>
+              <div className="search-container">{search}</div>
               <div style={{ paddingBottom: "20px" }}>{list}</div>
             </div>
           )}
