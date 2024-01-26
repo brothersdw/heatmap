@@ -248,3 +248,7 @@ body {
 .list-items {
   display: block;
 }
+
+.test-commit {
+  display: none;
+}
