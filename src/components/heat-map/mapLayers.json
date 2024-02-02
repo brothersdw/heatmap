@@ -1,0 +1,78 @@
+{
+  "countiesLayerProperties": {
+    "id": "counties",
+    "zoomThreshold": 4.7,
+    "stops": [
+      [0, "#ebebeb"],
+      [100, "#34dbe0"],
+      [10000, "#347ce0"],
+      [50000, "#9f37db"],
+      [100000, "#4d15a1"],
+      [200000, "#2c0566"]
+    ],
+    "fillOpacity": 1,
+    "source": "counties"
+  },
+  "stateLayerProperties": {
+    "id": "state",
+    "zoomThreshold": 4.7,
+    "stops": [
+      [0, "#ebebeb"],
+      [100, "#34dbe0"],
+      [10000, "#347ce0"],
+      [50000, "#9f37db"],
+      [100000, "#4d15a1"],
+      [200000, "#2c0566"]
+    ],
+    "fillOpacity": 1,
+    "source": "state"
+  },
+  "genPopCountyLayerProperties": {
+    "id": "gen-pop-county",
+    "zoomThreshold": 4.7,
+    "stops": [
+      [0, "#f2ffa5"],
+      [100000, "#c1f53f"],
+      [200000, "#52cd19"],
+      [300000, "#0a9518"],
+      [400000, "#084924"],
+      [500000, "#063a0b"]
+    ],
+    "fillOpacity": 1,
+    "source": "gen-pop-county"
+  },
+  "genPopStateLayerProperties": {
+    "id": "gen-pop-state",
+    "zoomThreshold": 4.7,
+    "stops": [
+      [0, "#f2ffa5"],
+      [100000, "#c1f53f"],
+      [200000, "#52cd19"],
+      [300000, "#0a9518"],
+      [400000, "#084924"],
+      [500000, "#063a0b"]
+    ],
+    "fillOpacity": 1,
+    "source": "gen-pop-state"
+  },
+  "genPopPerCountyLayerProperties": {
+    "id": "gen-pop-per-county",
+    "zoomThreshold": 4.7,
+    "stops": [
+      [0, "#fff702"],
+      [100, "#ff4a0e"]
+    ],
+    "fillOpacity": 1,
+    "source": "gen-pop-per-county"
+  },
+  "genPopPerStateLayerProperties": {
+    "id": "gen-pop-per-state",
+    "zoomThreshold": 4.7,
+    "stops": [
+      [0, "#fff702"],
+      [100, "#ff4a0e"]
+    ],
+    "fillOpacity": 1,
+    "source": "gen-pop-per-state"
+  }
+}

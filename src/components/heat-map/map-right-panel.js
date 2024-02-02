@@ -1,7 +1,21 @@
 import { useState, useEffect } from "react";
-export const RightPanel = ({ title, rightPanelInfo }) => {
+import { DatePicker } from ".";
+export const RightPanel = ({
+  title,
+  rightPanelInfo,
+  rightPanelStartDate,
+  setRightPanelStartDate,
+  rightPanelEndDate,
+  setRightPanelEndDate,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
+  const date = new Date();
+  const dateToISOString = new Date(
+    date.setDate(date.getDate() - 2)
+  ).toISOString();
+  const currentDayStart = dateToISOString.split("T")[0];
+  const currentDayEnd = dateToISOString.split("T")[0];
   useEffect(() => {
     title !== currentTitle && title ? setIsOpen(true) : setIsOpen(false);
     setCurrentTitle(title);
@@ -12,7 +26,7 @@ export const RightPanel = ({ title, rightPanelInfo }) => {
       style={
         isOpen
           ? {
-              left: "75.5vw",
+              left: "70vw",
             }
           : { left: "100vw" }
       }
@@ -42,6 +56,14 @@ export const RightPanel = ({ title, rightPanelInfo }) => {
                 });
               }
             })}
+            <DatePicker
+              multiSelect
+              date1={rightPanelStartDate}
+              date2={rightPanelEndDate}
+              defaultDate={currentDayStart}
+              setDate1={setRightPanelStartDate}
+              setDate2={setRightPanelEndDate}
+            />
           </>
         )}
       </div>

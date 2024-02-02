@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SelectDropDown, ColorBarLegend, ToggleSwitch } from ".";
+import { SelectDropDown, ColorBarLegend, ToggleSwitch, DatePicker } from ".";
 export const LeftPanel = ({
   zoom,
   disease,
@@ -11,15 +11,36 @@ export const LeftPanel = ({
   setToggleState,
   genPopSwitch,
   setGenPopSwitch,
+  genPopPerSwitch,
+  setGenPopPerSwitch,
+  leftPanelDate,
+  setLeftPanelDate,
+  setData1,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   //   const [genPopSliderPos, setGenPopCasesSliderPos] = useState("slider-left");
+  const date = new Date();
+  const dateToISOString = new Date(
+    date.setDate(date.getDate() - 2)
+  ).toISOString();
+  const currentDayStart = dateToISOString.split("T")[0];
+  const currentDayEnd = dateToISOString.split("T")[0];
   useEffect(() => {
     if (toggleState.label === "Cases" && !toggleState.on) {
       setGenPopSwitch(false);
+      setGenPopPerSwitch(false);
     }
     if (toggleState.label === "General Population" && !toggleState.on) {
       setCasesSwitch(false);
+      setGenPopPerSwitch(false);
+    }
+    if (
+      toggleState.label === "General Population Percentage" &&
+      !toggleState.on
+    ) {
+      setCasesSwitch(false);
+      setGenPopSwitch(false);
+      // setGenPopPerSwitch(true);
     }
   });
   const dropDownOptions = diseases.data.map((item, idx) => {
@@ -39,7 +60,7 @@ export const LeftPanel = ({
       style={
         isOpen
           ? {
-              left: "-25vw",
+              left: "-30vw",
             }
           : { left: "0" }
       }
@@ -60,11 +81,19 @@ export const LeftPanel = ({
           setToggleSwitch={setCasesSwitch}
         />
         {casesSwitch && (
-          <SelectDropDown
-            setValue={setDisease}
-            value={dropDownValue}
-            dropDownOptions={dropDownOptions}
-          />
+          <>
+            <DatePicker
+              date1={leftPanelDate}
+              setDate1={setLeftPanelDate}
+              setData1={setData1}
+              defaultDate={currentDayStart}
+            />
+            <SelectDropDown
+              setValue={setDisease}
+              value={dropDownValue}
+              dropDownOptions={dropDownOptions}
+            />
+          </>
         )}
         {casesSwitch ? (
           zoom > 4.7 ? (
@@ -131,6 +160,29 @@ export const LeftPanel = ({
                 "#084924",
                 "#063a0b",
               ]}
+            />
+          )
+        ) : null}
+        <ToggleSwitch
+          switchLabel={"General Population Percentage"}
+          setToggleState={setToggleState}
+          toggleSwitch={genPopPerSwitch}
+          setToggleSwitch={setGenPopPerSwitch}
+        />
+        {genPopPerSwitch ? (
+          zoom > 4.7 ? (
+            <ColorBarLegend
+              rangeNum1={"0"}
+              rangeNum2={"100%"}
+              title={"General Population Percentage"}
+              colors={["#fff702", "#ff4a0e"]}
+            />
+          ) : (
+            <ColorBarLegend
+              rangeNum1={"0"}
+              rangeNum2={"100%"}
+              title={"General Population Percentage"}
+              colors={["#fff702", "#ff4a0e"]}
             />
           )
         ) : null}

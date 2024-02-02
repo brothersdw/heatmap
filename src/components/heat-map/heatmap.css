@@ -55,7 +55,7 @@ body {
 }
 
 .right-panel-container {
-  width: 25vw;
+  width: 30vw;
   height: 100vh;
   z-index: 1;
   position: absolute;
@@ -63,7 +63,7 @@ body {
 }
 
 .left-panel-container {
-  width: 25vw;
+  width: 30vw;
   height: 100vh;
   z-index: 1;
   position: absolute;
@@ -241,14 +241,53 @@ body {
   border: none;
 }
 
-.search-container {
+.search-container li span {
   padding-bottom: 20px;
 }
 
-.list-items {
-  display: block;
+.select-options li {
+  width: 100vw;
+  margin-left: -10px;
+  line-height: 2;
+  border-bottom: 1px solid rgb(222, 222, 222);
 }
 
-.test-commit2 {
-  display: none;
+.select-options li:hover {
+  cursor: pointer;
+  background-color: rgba(105, 170, 178, 0.2);
+}
+
+.date-element {
+  color: white;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.date-picker-container {
+  margin-left: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.date-picker-container input {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.date-picker-container button {
+  padding: 7px;
+  border-radius: 4px;
+  border: 1px solid white;
+  color: white;
+  background-color: #167da6;
+  cursor: pointer;
+}
+
+.date-picker-container button:hover {
+  padding: 7px;
+  border-radius: 4px;
+  border: 1px solid #167da6;
+  color: #167da6;
+  background-color: white;
 }

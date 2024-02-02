@@ -1,0 +1,75 @@
+import { getCountyMapData } from "../../api/get-counties-mapbox-data";
+export const DatePicker = ({
+  multiSelect = false,
+  defaultDate,
+  date1,
+  date2,
+  setDate1,
+  setDate2,
+  setData1,
+}) => {
+  return (
+    <div className="date-picker-container">
+      {multiSelect ? (
+        <>
+          <div className="date-element">
+            <label className="date-picker-label" htmlFor="start">
+              Start:{" "}
+            </label>
+            <input
+              name="start"
+              type="date"
+              max={defaultDate}
+              className="date-picker"
+              value={date1}
+              onChange={(e) => setDate1(e.target.value)}
+            />
+          </div>
+          <div className="date-element">
+            <label className="date-picker-label" htmlFor="end">
+              End:{" "}
+            </label>
+            <input
+              name="end"
+              type="date"
+              max={defaultDate}
+              className="date-picker"
+              value={date2}
+              onChange={(e) => setDate2(e.target.value)}
+            />
+          </div>
+          <div className="date-element">
+            <button>Set Date</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="date-element">
+            <label className="date-picker-label" htmlFor="end">
+              Date:{" "}
+            </label>
+            <input
+              name="end"
+              type="date"
+              max={defaultDate}
+              className="date-picker"
+              placeholder={date1}
+              value={date1}
+              onChange={(e) => setDate1(e.target.value)}
+            />
+          </div>
+          <div className="date-element">
+            <button
+              onClick={async () => {
+                const currentSetDate = await getCountyMapData(date1);
+                setData1(currentSetDate.data);
+              }}
+            >
+              Set Date
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
