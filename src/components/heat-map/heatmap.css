@@ -55,7 +55,7 @@ body {
 }
 
 .right-panel-container {
-  width: 25vw;
+  width: 30vw;
   height: 100vh;
   z-index: 1;
   position: absolute;
@@ -63,11 +63,21 @@ body {
 }
 
 .left-panel-container {
-  width: 25vw;
+  width: 30vw;
   height: 100vh;
   z-index: 1;
   position: absolute;
   transition: 1s;
+}
+
+.case-info-container {
+  border-top: 1px solid white;
+  border-bottom: 1px solid white;
+  padding-bottom: 5px;
+}
+
+.left-panel-child-switch {
+  margin-left: 5%;
 }
 
 .right-panel {
@@ -190,6 +200,7 @@ body {
   padding-bottom: 10px;
   position: relative;
   transition: 1s;
+  overflow: hidden;
 }
 
 .color-bar-title {
@@ -198,9 +209,14 @@ body {
   padding: 0;
 }
 
-.legend-num {
+.legend-num1 {
+  float: left;
   margin-left: 10%;
-  margin-right: 50%;
+  color: rgb(163, 163, 163);
+}
+.legend-num2 {
+  float: right;
+  margin-right: 10%;
   color: rgb(163, 163, 163);
 }
 
@@ -241,14 +257,265 @@ body {
   border: none;
 }
 
-.search-container {
+.search-container li span {
   padding-bottom: 20px;
 }
 
-.list-items {
-  display: block;
+.select-options li {
+  width: 100vw;
+  margin-left: -10px;
+  line-height: 2;
+  border-bottom: 1px solid rgb(222, 222, 222);
 }
 
-.test-commit2 {
-  display: none;
+.select-options li:hover {
+  cursor: pointer;
+  background-color: rgba(105, 170, 178, 0.2);
+}
+
+/*------------------- DatePicker css -----------------------*/
+
+.date-element {
+  color: white;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.date-picker-container {
+  margin-left: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.date-picker-container input {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.date-picker-container button {
+  padding: 7px;
+  border-radius: 4px;
+  border: 1px solid white;
+  color: white;
+  background-color: #167da6;
+  cursor: pointer;
+}
+
+.date-picker-container button:hover {
+  padding: 7px;
+  border-radius: 4px;
+  border: 1px solid #167da6;
+  color: #167da6;
+  background-color: white;
+}
+
+/*------------------- SlidingPanel css -----------------------*/
+.sliding-left-panel-container {
+  height: 100vh;
+  z-index: 1;
+  position: absolute;
+  transition: 1s;
+  z-index: 2;
+}
+
+.sliding-left-panel {
+  width: 95%;
+  height: 100%;
+  /* background-color: #303030; */
+  position: absolute;
+}
+
+.sliding-right-panel-container {
+  height: 100vh;
+  z-index: 1;
+  position: absolute;
+  transition: 1s;
+  z-index: 2;
+}
+
+.sliding-right-panel {
+  width: 95%;
+  left: 5%;
+  height: 100%;
+  background-color: rgb(48, 48, 48);
+  position: absolute;
+}
+
+.sliding-panel-title {
+  max-width: 100%;
+  color: white;
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 3px solid rgb(69, 69, 69);
+}
+
+.sliding-left-panel-open-close {
+  color: rgb(210, 210, 210);
+  font-weight: bolder;
+  /* background-color: rgb(48, 48, 48); */
+  left: 100%;
+  margin: 15px;
+  padding: 10px;
+  border: 2px solid rgb(210, 210, 210);
+  border-radius: 5px;
+  cursor: pointer;
+  position: absolute;
+}
+.sliding-right-panel-open-close {
+  color: rgb(210, 210, 210);
+  font-weight: bolder;
+  background-color: rgb(48, 48, 48);
+  right: 100%;
+  margin: 15px;
+  padding: 10px;
+  border: 2px solid rgb(210, 210, 210);
+  border-radius: 5px;
+  cursor: pointer;
+  position: absolute;
+}
+
+/*------------------- LoadingScreen css -----------------------*/
+
+@keyframes rotating-arrow {
+  0% {
+    transform: rotateZ(0deg);
+  }
+  25% {
+    transform: rotateZ(90deg);
+  }
+  50% {
+    transform: rotateZ(180deg);
+  }
+  75% {
+    transform: rotateZ(270deg);
+  }
+  100% {
+    transform: rotateZ(360deg);
+  }
+}
+
+@keyframes loading-dial {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.loading-screen-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(3, 3, 3, 0.8);
+  position: absolute;
+  z-index: 1;
+}
+
+.loading-icon-container {
+  width: 200px;
+  height: 200px;
+  margin-left: 50px;
+  margin-top: 50px;
+  position: absolute;
+  overflow: hidden;
+}
+
+.loading-elements-container {
+  width: 300px;
+  height: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  position: relative;
+}
+
+.loading-text {
+  color: white;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 2rem;
+  text-align: center;
+  top: 75%;
+  left: 50%;
+  -ms-transform: translateX(-50%);
+  transform: translateX(-50%);
+  position: absolute;
+}
+
+.loading-shard {
+  border-left: 40px solid transparent;
+  border-right: 40px solid transparent;
+  border-bottom: 100px solid white;
+  left: 60px;
+  position: absolute;
+}
+.loading-shard-1 {
+  transform: rotateZ(180deg);
+}
+.loading-shard-2 {
+  margin-left: 20%;
+  margin-top: 5%;
+  transform: rotateZ(225deg);
+}
+.loading-shard-3 {
+  margin-left: 25%;
+  margin-top: 25%;
+  transform: rotateZ(270deg);
+}
+.loading-shard-4 {
+  margin-left: 20%;
+  margin-top: 45%;
+  transform: rotateZ(315deg);
+}
+
+.loading-shard-5 {
+  margin-top: 100px;
+}
+
+.loading-shard-6 {
+  transform: rotateZ(45deg);
+  margin-left: -20%;
+  margin-top: 45%;
+}
+
+.loading-shard-7 {
+  transform: rotateZ(90deg);
+  margin-left: -25%;
+  margin-top: 25%;
+}
+.loading-shard-8 {
+  transform: rotateZ(135deg);
+  margin-left: -20%;
+  margin-top: 5%;
+}
+
+.loading-icon-container span {
+  animation: loading-dial 800ms linear infinite;
+}
+
+.loading-icon-container span:nth-child(1) {
+  animation-delay: 100ms;
+}
+.loading-icon-container span:nth-child(2) {
+  animation-delay: 200ms;
+}
+.loading-icon-container span:nth-child(3) {
+  animation-delay: 300ms;
+}
+.loading-icon-container span:nth-child(4) {
+  animation-delay: 400ms;
+}
+.loading-icon-container span:nth-child(5) {
+  animation-delay: 500ms;
+}
+.loading-icon-container span:nth-child(6) {
+  animation-delay: 600ms;
+}
+.loading-icon-container span:nth-child(7) {
+  animation-delay: 700ms;
+}
+.loading-icon-container span:nth-child(8) {
+  animation-delay: 800ms;
 }

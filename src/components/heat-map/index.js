@@ -7,3 +7,8 @@ export { LeftPanel } from "./map-left-panel";
 export { RightPanel } from "./map-right-panel";
 export { ColorBarLegend } from "./legend-color-bar";
 export { ToggleSwitch } from "./toggle-switch";
+export { DatePicker } from "./datepicker";
+// export { addMapLayer } from "./add-map-layer";
+export { friendlyNumber, addMapLayer } from "./map-helpers";
+export { SlidingPanel } from "./sliding-panel";
+export { LoadingScreen } from "./loading-screen";
