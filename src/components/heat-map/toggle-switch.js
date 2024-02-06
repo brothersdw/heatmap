@@ -1,4 +1,3 @@
-import { useState } from "react";
 export const ToggleSwitch = ({
   toggleSwitch,
   setToggleSwitch,
