@@ -10,8 +10,10 @@ import {
   RightPanel,
   addMapLayer,
   friendlyNumber,
+  LoadingScreen,
 } from "."; // Import components for map display
-const mapLayers = require("./mapLayers.json");
+const mapLayers = require("./mapLayers.json"); // import mapLayers json for object reference.
+// Set layer objects for map layers
 const countiesLayerProperties = mapLayers.countiesLayerProperties;
 const stateLayerProperties = mapLayers.stateLayerProperties;
 const genPopCountyLayerProperties = mapLayers.genPopCountyLayerProperties;
@@ -21,9 +23,7 @@ const genPopPerStateLayerProperties = mapLayers.genPopPerStateLayerProperties;
 const publicToken = require("../../tokens.json").publicToken; // Can exchange this for your own mapbox token
 const diseases = await getDiseases(); // Await fetch function for diseases and set diseases to response
 const date = new Date();
-const dateToISOString = new Date(
-  date.setDate(date.getDate() - 2)
-).toISOString();
+const dateToISOString = new Date(date.setDate(date.getDate())).toISOString();
 const currentDayStart = dateToISOString.split("T")[0];
 const currentDayEnd = dateToISOString.split("T")[0];
 const countyData = await getCountyMapData(currentDayStart); // Await fetch function for map data and set mData to response
@@ -50,25 +50,31 @@ export const HeatMap = () => {
   const [cursorY, setCursorY] = useState(); // Grabs the y position of the cursor for the MapPopup component
   const [popupVisible, setPopupVisible] = useState(false); // Controls visible state of MapPopup
   const [cases, setCases] = useState({}); // Controls number of cases displayed in MapPopup and DataBox components as well as disease description in MapPopup
-  const [disease, setDisease] = useState(diseases.data[0].disease_cases_key);
-  const [selectedCounty, setSelectedCounty] = useState("");
-  const [selectedState, setSelectedState] = useState("");
-  const [selectedCases, setSelectedCases] = useState({});
-  const [selectedGenPop, setSelectedGenPop] = useState({});
-  const [selectedGenPopPer, setSelectedGenPopPer] = useState({});
-  const [casesSwitch, setCasesSwitch] = useState(true);
-  const [toggleState, setToggleState] = useState({});
-  const [genPopSwitch, setGenPopSwitch] = useState(false);
-  const [genPopPerSwitch, setGenPopPerSwitch] = useState(false);
-  const [genPop, setGenPop] = useState({});
-  const [genPopPer, setGenPopPer] = useState({});
+  const [disease, setDisease] = useState(diseases.data[0].disease_cases_key); // Controls the current disease that is chosen
+  const [selectedCounty, setSelectedCounty] = useState(""); // Selected county for info panel display
+  const [selectedState, setSelectedState] = useState(""); // Selected state for info panel display
+  const [selectedCases, setSelectedCases] = useState({}); // Selected cases for info panel display
+  const [selectedGenPop, setSelectedGenPop] = useState({}); // Selected gen pop for info panel display
+  const [selectedGenPopPer, setSelectedGenPopPer] = useState({}); // Selected gen pop percentage for info panel display
+  const [caseInfoSwitch, setCaseInfoSwitch] = useState(true);
+  const [casesSwitch, setCasesSwitch] = useState(true); // State for cases toggle switch
+  const [toggleState, setToggleState] = useState({}); // toggleState for toggle switch
+  const [genPopSwitch, setGenPopSwitch] = useState(false); // State for genPop toggle switch
+  const [genPopPerSwitch, setGenPopPerSwitch] = useState(false); // State for genPop percentage toggle switch
+  const [genPop, setGenPop] = useState({}); // Controls what is displayed in the popup for genPop statistics
+  const [genPopPer, setGenPopPer] = useState({}); // Controls what is displayed in the popup for genPop statistics
   const [rightPanelStartDate, setRightPanelStartDate] =
-    useState(currentDayStart);
-  const [rightPanelEndDate, setRightPanelEndDate] = useState(currentDayEnd);
-  const [leftPanelDate, setLeftPanelDate] = useState(currentDayStart);
+    useState(currentDayStart); // State for start date of date picker in right panel this will be used for graphs
+  const [rightPanelEndDate, setRightPanelEndDate] = useState(currentDayEnd); // State for start date of date picker in
+  // right panel this will be used for graphs
+  const [leftPanelDate, setLeftPanelDate] = useState(currentDayStart); // State for start date of date picker in left panel
+  // this is used to show heatmap and cases for a specific date
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     const stateGenPopulationTotal = countyMapData.features.reduce(
+      // Summing all county populations for state population
       (acc, curr) => {
         return acc + curr.properties.genPopulation;
       },
@@ -87,15 +93,12 @@ export const HeatMap = () => {
 
     const stateGenPopulationPerTotal =
       stateGenPopulationPerSumTotal / countyCount;
-    const stateGenPopulationPerTotalTest = Number(cases.Cases) / countyCount;
-
-    console.log("state gen pop percent:", cases.Cases);
+    // Reset states
     setSelectedCases({});
     setSelectedGenPop({});
     setSelectedGenPopPer({});
     setSelectedCounty("");
     setSelectedState("");
-    const zoomThreshold = 4.7;
     setCases({});
     setGenPop({});
     setGenPopPer({});
@@ -110,6 +113,7 @@ export const HeatMap = () => {
     });
 
     const addMapSource = (sourceName = "", dataType = "", dataObj = {}) => {
+      // function to add map sources
       map.addSource(sourceName, {
         type: dataType,
         data: dataObj,
@@ -309,7 +313,7 @@ export const HeatMap = () => {
           return {
             ...gp,
             County: genPopCounty,
-            ["General Population"]: friendlyNumber(genPopulation),
+            "General Population": friendlyNumber(genPopulation),
           };
         });
       });
@@ -326,7 +330,7 @@ export const HeatMap = () => {
           return {
             ...gp,
             State: state,
-            ["General Population"]: friendlyNumber(stateGenPopulationTotal),
+            "General Population": friendlyNumber(stateGenPopulationTotal),
           };
         });
       });
@@ -341,6 +345,11 @@ export const HeatMap = () => {
         // const genPopulationPer =
         //   e.features[0].properties[`${disease}_cases_percentage`]; // Set to value of current genPopulation
         // // for the county the cursor is currently in. Used in Databox and MapPopup components
+
+        const disease_data = diseases.data.filter(
+          (d) => d.disease_cases_key === disease
+        );
+        const disease_description = disease_data[0].disease_description;
         const genPopulationPer =
           (e.features[0].properties[`${disease}`] /
             e.features[0].properties["genPopulation"]) *
@@ -351,9 +360,8 @@ export const HeatMap = () => {
           return {
             ...gp,
             County: genPopPerCounty,
-            ["Case Percentage of Population"]: `${genPopulationPer.toFixed(
-              2
-            )}%`,
+            Disease: disease_description,
+            "Case Percentage of Population": `${genPopulationPer.toFixed(2)}%`,
           };
         });
       });
@@ -364,13 +372,18 @@ export const HeatMap = () => {
         setCursorY(e.point.y);
         // Set to state that the cursor is currently in
         const state = e.features[0].properties.state;
+        const disease_data = diseases.data.filter(
+          (d) => d.disease_cases_key === disease
+        );
+        const disease_description = disease_data[0].disease_description;
 
         // Set genPop to object with state and "General Population"
         setGenPopPer((gp) => {
           return {
             ...gp,
             State: state,
-            ["Case Percentage of Population"]: `${stateGenPopulationPerTotal.toFixed(
+            Disease: disease_description,
+            "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
               2
             )}%`,
           };
@@ -390,7 +403,6 @@ export const HeatMap = () => {
         );
         const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
         // in MapPopup component.
-        console.log("diseaseCases: ", diseaseCases);
         // Set cases to object with cases and disease
         setSelectedCases((c) => {
           return {
@@ -438,15 +450,7 @@ export const HeatMap = () => {
         setSelectedGenPop((c) => {
           return {
             ...c,
-            ["General Population"]: friendlyNumber(genPopulation),
-            components: [
-              <p style={{ color: "white" }} key={"test-comp-key-1"}>
-                Test Component 1
-              </p>,
-              <p style={{ color: "white" }} key={"test-comp-key-2"}>
-                Test Component 2
-              </p>,
-            ],
+            "General Population": friendlyNumber(genPopulation),
           };
         });
       });
@@ -460,15 +464,7 @@ export const HeatMap = () => {
         setSelectedGenPop((c) => {
           return {
             ...c,
-            ["General Population"]: friendlyNumber(stateGenPopulationTotal),
-            components: [
-              <p style={{ color: "white" }} key={"test-comp-key-1"}>
-                Test Component 1
-              </p>,
-              <p style={{ color: "white" }} key={"test-comp-key-2"}>
-                Test Component 2
-              </p>,
-            ],
+            "General Population": friendlyNumber(stateGenPopulationTotal),
           };
         });
       });
@@ -483,27 +479,13 @@ export const HeatMap = () => {
         const genPopulationPer =
           e.features[0].properties[`${disease}_cases_percentage`]; // Set to value of current disease_cases_key
         // for the county the cursor is currently in. Used in Databox and MapPopup components
-        console.log(
-          "Test:",
-          e.features[0].properties[`${disease}_cases_percentage`]
-        );
 
         // Set selectedGenPop to object with General Population
         setSelectedGenPopPer((c) => {
           return {
             ...c,
             Disease: disease_description,
-            ["Case Percentage of Population"]: `${genPopulationPer.toFixed(
-              2
-            )}%`,
-            components: [
-              <p style={{ color: "white" }} key={"test-comp-key-1"}>
-                Test Component 1
-              </p>,
-              <p style={{ color: "white" }} key={"test-comp-key-2"}>
-                Test Component 2
-              </p>,
-            ],
+            "Case Percentage of Population": `${genPopulationPer.toFixed(2)}%`,
           };
         });
       });
@@ -513,9 +495,6 @@ export const HeatMap = () => {
         setSelectedCounty("");
         setSelectedState(e.features[0].properties.state); // Set to value of current state that has been clicked
         // MapPopup components
-
-        const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
-        // for the county the cursor is currently in. Used in Databox and MapPopup components
 
         // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
         const disease_data = diseases.data.filter(
@@ -529,17 +508,9 @@ export const HeatMap = () => {
           return {
             ...c,
             Disease: disease_description,
-            ["Case Percentage of Population"]: `${stateGenPopulationPerTotal.toFixed(
+            "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
               2
             )}%`,
-            components: [
-              <p style={{ color: "white" }} key={"test-comp-key-1"}>
-                Test Component 1
-              </p>,
-              <p style={{ color: "white" }} key={"test-comp-key-2"}>
-                Test Component 2
-              </p>,
-            ],
           };
         });
       });
@@ -571,19 +542,24 @@ export const HeatMap = () => {
         map.getCanvas().style.cursor = "grab";
       });
     });
-
+    console.log("isLoading:", isLoading);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
     // Unmount map
     return () => map.remove();
   }, [disease, casesSwitch, genPopSwitch, genPopPerSwitch, countyMapData]);
 
   return (
-    <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
+    <div>
       <>
         <LeftPanel
           zoom={zoom}
           disease={disease}
           diseases={diseases}
           setDisease={setDisease}
+          caseInfoSwitch={caseInfoSwitch}
+          setCaseInfoSwitch={setCaseInfoSwitch}
           casesSwitch={casesSwitch}
           setCasesSwitch={setCasesSwitch}
           genPopSwitch={genPopSwitch}
@@ -596,22 +572,21 @@ export const HeatMap = () => {
           setLeftPanelDate={setLeftPanelDate}
           setData1={setMapCountyData}
         />
-        {casesSwitch && (
+        {casesSwitch && ( // Display if casesSwitch is set to true
           <RightPanel
             title={
               selectedCounty
                 ? `${selectedCounty} Case Statistics`
                 : selectedState && `${selectedState} Case Statistics`
             }
-            rightPanelInfo={selectedCases} // Expects an object. This can contain an array property "components"
-            // with an array of components for display in right panel.
-            rightPanelStartDate={rightPanelStartDate}
-            rightPanelEndDate={rightPanelEndDate}
-            setRightPanelStartDate={setRightPanelStartDate}
-            setRightPanelEndDate={setRightPanelEndDate}
+            rightPanelInfo={selectedCases} // Object with properties to display in right panel
+            rightPanelStartDate={rightPanelStartDate} // Date picker start date
+            rightPanelEndDate={rightPanelEndDate} // Date picker end date
+            setRightPanelStartDate={setRightPanelStartDate} // Set date picker start date
+            setRightPanelEndDate={setRightPanelEndDate} // Set date picker end date
           />
         )}
-        {genPopSwitch && (
+        {genPopSwitch && ( // Display if genPopSwitch is set to true
           <RightPanel
             title={
               selectedCounty
@@ -619,15 +594,14 @@ export const HeatMap = () => {
                 : selectedState &&
                   `${selectedState} General Population Statistics`
             }
-            rightPanelInfo={selectedGenPop} // Expects an object. This can contain an array property "components"
-            // with an array of components for display in right panel.
+            rightPanelInfo={selectedGenPop}
             rightPanelStartDate={rightPanelStartDate}
             rightPanelEndDate={rightPanelEndDate}
             setRightPanelStartDate={setRightPanelStartDate}
             setRightPanelEndDate={setRightPanelEndDate}
           />
         )}
-        {genPopPerSwitch && (
+        {genPopPerSwitch && ( // Display if genPopSwitch is set to true
           <RightPanel
             title={
               selectedCounty
@@ -635,40 +609,44 @@ export const HeatMap = () => {
                 : selectedState &&
                   `${selectedState} General Population Percentage Statistics`
             }
-            rightPanelInfo={selectedGenPopPer} // Expects an object. This can contain an array property "components"
-            // with an array of components for display in right panel.
+            rightPanelInfo={selectedGenPopPer}
             rightPanelStartDate={rightPanelStartDate}
             rightPanelEndDate={rightPanelEndDate}
             setRightPanelStartDate={setRightPanelStartDate}
             setRightPanelEndDate={setRightPanelEndDate}
           />
         )}
-        {popupVisible && Object.keys(cases).length > 0 && (
-          <MapPopup
-            cursorX={cursorX}
-            cursorY={cursorY}
-            display={popupVisible}
-            popupValuesObj={cases} // Expects an object
-          />
-        )}
-        {popupVisible && Object.keys(genPop).length > 0 && (
-          <MapPopup
-            // county={county}
-            cursorX={cursorX}
-            cursorY={cursorY}
-            display={popupVisible}
-            popupValuesObj={genPop} // Expects an object
-          />
-        )}
-        {popupVisible && Object.keys(genPopPer).length > 0 && (
-          <MapPopup
-            // county={county}
-            cursorX={cursorX}
-            cursorY={cursorY}
-            display={popupVisible}
-            popupValuesObj={genPopPer} // Expects an object
-          />
-        )}
+        {popupVisible &&
+          Object.keys(cases).length > 0 && ( // Show map popup if popupVisible is set to true and properties
+            // exist in cases
+            <MapPopup
+              cursorX={cursorX} // cursorX tracks movement of mouse on the X axis to allow popup to follow mouse
+              cursorY={cursorY} // cursorY tracks movement of mouse on the Y axis to allow popup to follow mouse
+              display={popupVisible} // Boolean to determine when popup is visible
+              popupValuesObj={cases} // Object with properties for popup to display
+            />
+          )}
+        {popupVisible &&
+          Object.keys(genPop).length > 0 && ( // Show map popup if popupVisible is set to true and properties
+            // exist in genPop
+            <MapPopup
+              cursorX={cursorX}
+              cursorY={cursorY}
+              display={popupVisible}
+              popupValuesObj={genPop}
+            />
+          )}
+        {popupVisible &&
+          Object.keys(genPopPer).length > 0 && ( // Show map popup if popupVisible is set to true and properties
+            // exist in genPopPer
+            <MapPopup
+              cursorX={cursorX}
+              cursorY={cursorY}
+              display={popupVisible}
+              popupValuesObj={genPopPer}
+            />
+          )}
+        {isLoading && <LoadingScreen />}
         <div ref={mapContainer} id="map-container" className="map-container" />
       </>
     </div>

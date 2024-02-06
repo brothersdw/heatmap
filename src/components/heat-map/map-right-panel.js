@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DatePicker } from ".";
+import { DatePicker, SlidingPanel } from ".";
 export const RightPanel = ({
   title,
   rightPanelInfo,
@@ -19,54 +19,40 @@ export const RightPanel = ({
   useEffect(() => {
     title !== currentTitle && title ? setIsOpen(true) : setIsOpen(false);
     setCurrentTitle(title);
+    console.log("right panel open: ", isOpen);
   }, [title]);
   return (
-    <div
-      className="right-panel-container"
-      style={
-        isOpen
-          ? {
-              left: "70vw",
-            }
-          : { left: "100vw" }
-      }
+    <SlidingPanel
+      panelClass="right"
+      title={title}
+      secondaryPanelSwitch={isOpen}
+      setSecondaryPanelSwitch={setIsOpen}
     >
-      <span
-        className="right-panel-open-close"
-        onClick={() => {
-          setIsOpen(!isOpen);
-        }}
-      >
-        {isOpen ? ">" : "<"}
-      </span>
-      <div className="right-panel">
-        {title && (
-          <>
-            <h3 className="county-statistics-title">{title}</h3>
-            {Object.keys(rightPanelInfo).map((r, idx) => {
-              if (r !== "components") {
-                return (
-                  <p className="county-stat" key={`stat-${idx}`}>
-                    <strong>{r}:</strong> {rightPanelInfo[r]}
-                  </p>
-                );
-              } else {
-                return rightPanelInfo[r].map((component) => {
-                  return component;
-                });
-              }
-            })}
-            <DatePicker
-              multiSelect
-              date1={rightPanelStartDate}
-              date2={rightPanelEndDate}
-              defaultDate={currentDayStart}
-              setDate1={setRightPanelStartDate}
-              setDate2={setRightPanelEndDate}
-            />
-          </>
-        )}
-      </div>
-    </div>
+      {title && (
+        <>
+          {Object.keys(rightPanelInfo).map((r, idx) => {
+            if (r !== "components") {
+              return (
+                <p className="county-stat" key={`stat-${idx}`}>
+                  <strong>{r}:</strong> {rightPanelInfo[r]}
+                </p>
+              );
+            } else {
+              return rightPanelInfo[r].map((component) => {
+                return component;
+              });
+            }
+          })}
+          <DatePicker
+            multiSelect
+            date1={rightPanelStartDate}
+            date2={rightPanelEndDate}
+            defaultDate={currentDayStart}
+            setDate1={setRightPanelStartDate}
+            setDate2={setRightPanelEndDate}
+          />
+        </>
+      )}
+    </SlidingPanel>
   );
 };

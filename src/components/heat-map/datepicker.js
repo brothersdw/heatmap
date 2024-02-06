@@ -1,7 +1,7 @@
 import { getCountyMapData } from "../../api/get-counties-mapbox-data";
 export const DatePicker = ({
   multiSelect = false,
-  defaultDate,
+  maxDate,
   date1,
   date2,
   setDate1,
@@ -19,7 +19,7 @@ export const DatePicker = ({
             <input
               name="start"
               type="date"
-              max={defaultDate}
+              max={maxDate}
               className="date-picker"
               value={date1}
               onChange={(e) => setDate1(e.target.value)}
@@ -32,7 +32,7 @@ export const DatePicker = ({
             <input
               name="end"
               type="date"
-              max={defaultDate}
+              max={maxDate}
               className="date-picker"
               value={date2}
               onChange={(e) => setDate2(e.target.value)}
@@ -51,7 +51,7 @@ export const DatePicker = ({
             <input
               name="end"
               type="date"
-              max={defaultDate}
+              max={maxDate}
               className="date-picker"
               placeholder={date1}
               value={date1}

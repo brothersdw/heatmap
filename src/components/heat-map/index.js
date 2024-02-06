@@ -10,3 +10,5 @@ export { ToggleSwitch } from "./toggle-switch";
 export { DatePicker } from "./datepicker";
 // export { addMapLayer } from "./add-map-layer";
 export { friendlyNumber, addMapLayer } from "./map-helpers";
+export { SlidingPanel } from "./sliding-panel";
+export { LoadingScreen } from "./loading-screen";
