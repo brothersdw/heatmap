@@ -41,7 +41,7 @@ mapboxgl.accessToken = publicToken; // !Important you have to have this or you w
 
 export const HeatMap = () => {
   const mapContainer = useRef(null);
-  const [countyMapData, setMapCountyData] = useState(countyData.data);
+  const [countyMapData, setCountyMapData] = useState(countyData.data);
   // const [map, setMap] = useState(null);
   const [lng, setLng] = useState(-83.75357); // Set default lng, lat to center on Florida. Also used for DataBox component display
   const [lat, setLat] = useState(27.791858);
@@ -570,7 +570,7 @@ export const HeatMap = () => {
           setToggleState={setToggleState}
           leftPanelDate={leftPanelDate}
           setLeftPanelDate={setLeftPanelDate}
-          setData1={setMapCountyData}
+          setData1={setCountyMapData}
         />
         {casesSwitch && ( // Display if casesSwitch is set to true
           <RightPanel
@@ -579,6 +579,9 @@ export const HeatMap = () => {
                 ? `${selectedCounty} Case Statistics`
                 : selectedState && `${selectedState} Case Statistics`
             }
+            currentSwitch={"cases"}
+            disease={disease}
+            county={selectedCounty}
             rightPanelInfo={selectedCases} // Object with properties to display in right panel
             rightPanelStartDate={rightPanelStartDate} // Date picker start date
             rightPanelEndDate={rightPanelEndDate} // Date picker end date
@@ -594,6 +597,10 @@ export const HeatMap = () => {
                 : selectedState &&
                   `${selectedState} General Population Statistics`
             }
+            countyMapData={countyMapData}
+            currentSwitch={"genPop"}
+            county={selectedCounty}
+            disease={disease}
             rightPanelInfo={selectedGenPop}
             rightPanelStartDate={rightPanelStartDate}
             rightPanelEndDate={rightPanelEndDate}
@@ -609,6 +616,10 @@ export const HeatMap = () => {
                 : selectedState &&
                   `${selectedState} General Population Percentage Statistics`
             }
+            countyMapData={countyMapData}
+            currentSwitch={"genPopPer"}
+            county={selectedCounty}
+            disease={disease}
             rightPanelInfo={selectedGenPopPer}
             rightPanelStartDate={rightPanelStartDate}
             rightPanelEndDate={rightPanelEndDate}
