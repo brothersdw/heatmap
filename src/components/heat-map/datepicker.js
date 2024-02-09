@@ -11,7 +11,7 @@ export const DatePicker = ({
   return (
     <div className="date-picker-container">
       {multiSelect ? (
-        <>
+        <div className="date-elements-container">
           <div className="date-element">
             <label className="date-picker-label" htmlFor="start">
               Start:{" "}
@@ -38,10 +38,10 @@ export const DatePicker = ({
               onChange={(e) => setDate2(e.target.value)}
             />
           </div>
-          <div className="date-element">
+          {/* <div className="date-element">
             <button>Set Date</button>
-          </div>
-        </>
+          </div> */}
+        </div>
       ) : (
         <>
           <div className="date-element">

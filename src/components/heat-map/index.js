@@ -12,3 +12,4 @@ export { DatePicker } from "./datepicker";
 export { friendlyNumber, addMapLayer } from "./map-helpers";
 export { SlidingPanel } from "./sliding-panel";
 export { LoadingScreen } from "./loading-screen";
+export { LineChart } from "./line-chart";

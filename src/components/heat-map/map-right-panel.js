@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DatePicker, SlidingPanel } from ".";
+import { DatePicker, SlidingPanel, LineChart } from ".";
 export const RightPanel = ({
   title,
   rightPanelInfo,
@@ -7,13 +7,15 @@ export const RightPanel = ({
   setRightPanelStartDate,
   rightPanelEndDate,
   setRightPanelEndDate,
+  county,
+  disease,
+  currentSwitch,
+  countyMapData,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
   const date = new Date();
-  const dateToISOString = new Date(
-    date.setDate(date.getDate() - 2)
-  ).toISOString();
+  const dateToISOString = new Date(date.setDate(date.getDate())).toISOString();
   const currentDayStart = dateToISOString.split("T")[0];
   const currentDayEnd = dateToISOString.split("T")[0];
   useEffect(() => {
@@ -45,12 +47,24 @@ export const RightPanel = ({
           })}
           <DatePicker
             multiSelect
+            maxDate={currentDayStart}
             date1={rightPanelStartDate}
             date2={rightPanelEndDate}
-            defaultDate={currentDayStart}
             setDate1={setRightPanelStartDate}
             setDate2={setRightPanelEndDate}
           />
+          {rightPanelInfo && county && (
+            <LineChart
+              countyMapData={countyMapData}
+              currentSwitch={currentSwitch}
+              disease={disease}
+              county={county}
+              filter={rightPanelInfo}
+              chartTitle={title}
+              startDate={rightPanelStartDate}
+              endDate={rightPanelEndDate}
+            />
+          )}
         </>
       )}
     </SlidingPanel>

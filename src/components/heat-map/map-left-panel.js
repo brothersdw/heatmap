@@ -48,7 +48,7 @@ export const LeftPanel = ({
       setCaseInfoSwitch(false);
     }
     if (
-      toggleState.label === "Cases Percentage of General Population" &&
+      toggleState.label === "Case Percentage of General Population" &&
       !toggleState.on
     ) {
       setCasesSwitch(false);
@@ -134,7 +134,7 @@ export const LeftPanel = ({
           ) : null}
           <div className="left-panel-child-switch">
             <ToggleSwitch
-              switchLabel={"Cases Percentage of General Population"}
+              switchLabel={"Case Percentage of General Population"}
               setToggleState={setToggleState}
               toggleSwitch={genPopPerSwitch}
               setToggleSwitch={setGenPopPerSwitch}
