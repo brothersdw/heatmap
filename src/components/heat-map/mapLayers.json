@@ -27,6 +27,16 @@
     "fillOpacity": 1,
     "source": "state"
   },
+  "allStatesLineProperties": {
+    "id": "all-states-line",
+    "fillOpacity": 1,
+    "source": "all-states"
+  },
+  "allStatesFillProperties": {
+    "id": "all-states-fill",
+    "fillOpacity": 1,
+    "source": "all-states"
+  },
   "genPopCountyLayerProperties": {
     "id": "gen-pop-county",
     "zoomThreshold": 4.7,

@@ -24,6 +24,7 @@ export const LeftPanel = ({
   leftPanelDate,
   setLeftPanelDate,
   setData1,
+  state,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const date = new Date();
@@ -92,6 +93,7 @@ export const LeftPanel = ({
                 setDate1={setLeftPanelDate}
                 setData1={setData1}
                 maxDate={currentDayStart}
+                state={state}
               />
               <SelectDropDown
                 setValue={setDisease}

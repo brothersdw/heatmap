@@ -20,16 +20,22 @@ const genPopCountyLayerProperties = mapLayers.genPopCountyLayerProperties;
 const genPopStateLayerProperties = mapLayers.genPopStateLayerProperties;
 const genPopPerCountyLayerProperties = mapLayers.genPopPerCountyLayerProperties;
 const genPopPerStateLayerProperties = mapLayers.genPopPerStateLayerProperties;
+const allStatesLineProperties = mapLayers.allStatesLineProperties;
+const allStatesFillProperties = mapLayers.allStatesFillProperties;
 const publicToken = require("../../tokens.json").publicToken; // Can exchange this for your own mapbox token
 const diseases = await getDiseases(); // Await fetch function for diseases and set diseases to response
 const date = new Date();
-const dateToISOString = new Date(date.setDate(date.getDate())).toISOString();
+const dateToISOString = new Date(
+  date.setDate(date.getDate() - 1)
+).toISOString();
 const currentDayStart = dateToISOString.split("T")[0];
 const currentDayEnd = dateToISOString.split("T")[0];
-const countyData = await getCountyMapData(currentDayStart); // Await fetch function for map data and set mData to response
-// const countyMapData = countyData.data;
-const stateData = await getStateMapData();
-const stateMapData = stateData.data;
+const getAllStateBoundaries = await getStateMapData();
+const allStateBoundaries = getAllStateBoundaries.data;
+// const countyData = await getCountyMapData("FL", currentDayStart); // Await fetch function for map data and set mData to response
+// // const countyMapData = countyData.data;
+// const stateData = await getStateMapData("FL");
+// const stateMapData = stateData.data;
 
 diseases.data.sort((a, b) => {
   let textA = a.disease_cases_key.toUpperCase();
@@ -40,9 +46,26 @@ diseases.data.sort((a, b) => {
 mapboxgl.accessToken = publicToken; // !Important you have to have this or you will not be able display the map
 
 export const HeatMap = () => {
+  const [countyMapData, setCountyMapData] = useState({});
+  const [stateMapData, setStateMapData] = useState({});
+  const [usState, setUsState] = useState("tx");
+  // let countyData;
+  // let stateData;
+  // let stateMapData;
+  useEffect(() => {
+    const setData = async () => {
+      const countyData = await getCountyMapData(usState, currentDayStart); // Await fetch function for map data and set mData to response
+      // const countyMapData = countyData.data;
+      const stateData = await getStateMapData(usState);
+      const stateMapData = stateData.data;
+      setCountyMapData((c) => countyData.data);
+      setStateMapData((s) => stateMapData);
+    };
+    setData();
+  }, [usState]);
   const mapContainer = useRef(null);
-  const [countyMapData, setCountyMapData] = useState(countyData.data);
   // const [map, setMap] = useState(null);
+  // const [countyMapData, setCountyMapData] = useState(countyData.data);
   const [lng, setLng] = useState(-83.75357); // Set default lng, lat to center on Florida. Also used for DataBox component display
   const [lat, setLat] = useState(27.791858);
   const [zoom, setZoom] = useState(5); // This will be used to set boundary state
@@ -70,10 +93,21 @@ export const HeatMap = () => {
   const [leftPanelDate, setLeftPanelDate] = useState(currentDayStart); // State for start date of date picker in left panel
   // this is used to show heatmap and cases for a specific date
   const [isLoading, setIsLoading] = useState(true);
-
+  const [popupString, setPopupString] = useState("");
+  const initialMapObj = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        properties: { a1: "" },
+        // geometry: { type: "Polygon", coordinates: [[]] },
+        geometry: null,
+      },
+    ],
+  };
   useEffect(() => {
     setIsLoading(true);
-    const stateGenPopulationTotal = countyMapData.features.reduce(
+    const stateGenPopulationTotal = countyMapData?.features?.reduce(
       // Summing all county populations for state population
       (acc, curr) => {
         return acc + curr.properties.genPopulation;
@@ -81,10 +115,10 @@ export const HeatMap = () => {
       0
     );
     let countyCount = 0;
-    countyMapData.features.map((c) => {
+    countyMapData?.features?.map((c) => {
       countyCount++;
     });
-    const stateGenPopulationPerSumTotal = countyMapData.features.reduce(
+    const stateGenPopulationPerSumTotal = countyMapData?.features?.reduce(
       (acc, curr) => {
         return acc + curr.properties[`${disease}_cases_percentage`];
       },
@@ -105,7 +139,7 @@ export const HeatMap = () => {
 
     // Create map
     const map = new mapboxgl.Map({
-      container: mapContainer.current,
+      container: mapContainer?.current,
       style: "mapbox://styles/mapbox/outdoors-v12",
       center: [lng, lat],
       zoom: zoom,
@@ -114,9 +148,10 @@ export const HeatMap = () => {
 
     const addMapSource = (sourceName = "", dataType = "", dataObj = {}) => {
       // function to add map sources
-      map.addSource(sourceName, {
+      map?.addSource(sourceName, {
         type: dataType,
-        data: dataObj,
+        data: typeof dataObj !== "undefined" ? dataObj : initialMapObj,
+        // testData,
       });
     };
     // Map on load event
@@ -128,7 +163,31 @@ export const HeatMap = () => {
       addMapSource("gen-pop-state", "geojson", stateMapData);
       addMapSource("gen-pop-per-county", "geojson", countyMapData);
       addMapSource("gen-pop-per-state", "geojson", stateMapData);
+      addMapSource("all-states", "geojson", allStateBoundaries);
       //}
+
+      map.addLayer(
+        addMapLayer(
+          allStatesLineProperties,
+          "",
+          "none",
+          false,
+          false,
+          "line",
+          "transparent"
+        )
+      );
+      map.addLayer(
+        addMapLayer(
+          allStatesFillProperties,
+          "",
+          "none",
+          false,
+          false,
+          "fill",
+          "transparent"
+        )
+      );
 
       // Adding map layers conditionally {
       casesSwitch &&
@@ -214,13 +273,21 @@ export const HeatMap = () => {
       // }
 
       // When cursor enters boundaries set popupVisible to true and change cursor to a "pointer" from "grab" {
+      map.on("mouseenter", "all-states-fill", (e) => {
+        setPopupVisible(true);
+        setPopupString("Click state to view data");
+        map.getCanvas().style.cursor = "pointer";
+      });
+
       map.on("mouseenter", "counties", (e) => {
         setPopupVisible(true);
+        setPopupString();
         map.getCanvas().style.cursor = "pointer";
       });
 
       map.on("mouseenter", "state", (e) => {
         setPopupVisible(true);
+        setPopupString();
         map.getCanvas().style.cursor = "pointer";
       });
 
@@ -245,8 +312,18 @@ export const HeatMap = () => {
 
       // When the cursor is moving within boundaries of Florida set cursorx and y, set county and set cases for each layer
       // {
+      map.on("mousemove", "all-states-fill", (e) => {
+        setGenPop({});
+        setCases({});
+        setGenPopPer({});
+        setPopupString("Click to view state data");
+        setCursorX(e.point.x);
+        setCursorY(e.point.y);
+      });
+
       map.on("mousemove", "counties", (e) => {
         setCases({});
+        setPopupString();
         setCursorX(e.point.x);
         setCursorY(e.point.y);
 
@@ -274,6 +351,7 @@ export const HeatMap = () => {
 
       map.on("mousemove", "state", (e) => {
         setCases({});
+        setPopupString();
         setCursorX(e.point.x);
         setCursorY(e.point.y);
 
@@ -301,6 +379,7 @@ export const HeatMap = () => {
 
       map.on("mousemove", "gen-pop-county", (e) => {
         setGenPop({});
+        setPopupString();
         setCursorX(e.point.x);
         setCursorY(e.point.y);
 
@@ -320,6 +399,7 @@ export const HeatMap = () => {
 
       map.on("mousemove", "gen-pop-state", (e) => {
         setGenPop({});
+        setPopupString();
         setCursorX(e.point.x);
         setCursorY(e.point.y);
         // Set to state that the cursor is currently in
@@ -338,6 +418,7 @@ export const HeatMap = () => {
       // When the cursor is moving within county boundaries of Florida set cursorx and y, set county and set genPop {
       map.on("mousemove", "gen-pop-per-county", (e) => {
         setGenPop({});
+        setPopupString();
         setCursorX(e.point.x);
         setCursorY(e.point.y);
 
@@ -368,6 +449,7 @@ export const HeatMap = () => {
 
       map.on("mousemove", "gen-pop-per-state", (e) => {
         setGenPopPer({});
+        setPopupString();
         setCursorX(e.point.x);
         setCursorY(e.point.y);
         // Set to state that the cursor is currently in
@@ -514,31 +596,41 @@ export const HeatMap = () => {
           };
         });
       });
+
+      map.on("click", "all-states-fill", (e) => {
+        console.log("all states features:", e.features[0]);
+        setUsState(e.features[0].properties.state_ab);
+      });
       // }
 
       // When mouse leaves boundaries set popupVisible to false and set cursor back to "grab" from "pointer"
       map.on("mouseleave", "counties", () => {
         setPopupVisible(false);
-        map.getCanvas().style.cursor = "grab";
+        // map.getCanvas().style.cursor = "grab";
       });
       map.on("mouseleave", "state", () => {
         setPopupVisible(false);
-        map.getCanvas().style.cursor = "grab";
+        // map.getCanvas().style.cursor = "grab";
       });
       map.on("mouseleave", "gen-pop-county", () => {
         setPopupVisible(false);
-        map.getCanvas().style.cursor = "grab";
+        // map.getCanvas().style.cursor = "grab";
       });
       map.on("mouseleave", "gen-pop-state", () => {
         setPopupVisible(false);
-        map.getCanvas().style.cursor = "grab";
+        // map.getCanvas().style.cursor = "grab";
       });
       map.on("mouseleave", "gen-pop-per-county", () => {
         setPopupVisible(false);
-        map.getCanvas().style.cursor = "grab";
+        // map.getCanvas().style.cursor = "grab";
       });
       map.on("mouseleave", "gen-pop-per-state", () => {
         setPopupVisible(false);
+        // map.getCanvas().style.cursor = "grab";
+      });
+      map.on("mouseleave", "all-states-fill", (e) => {
+        setPopupVisible(false);
+        setPopupString();
         map.getCanvas().style.cursor = "grab";
       });
     });
@@ -571,6 +663,7 @@ export const HeatMap = () => {
           leftPanelDate={leftPanelDate}
           setLeftPanelDate={setLeftPanelDate}
           setData1={setCountyMapData}
+          state={usState}
         />
         {casesSwitch && ( // Display if casesSwitch is set to true
           <RightPanel
@@ -587,6 +680,7 @@ export const HeatMap = () => {
             rightPanelEndDate={rightPanelEndDate} // Date picker end date
             setRightPanelStartDate={setRightPanelStartDate} // Set date picker start date
             setRightPanelEndDate={setRightPanelEndDate} // Set date picker end date
+            state={usState}
           />
         )}
         {genPopSwitch && ( // Display if genPopSwitch is set to true
@@ -606,6 +700,7 @@ export const HeatMap = () => {
             rightPanelEndDate={rightPanelEndDate}
             setRightPanelStartDate={setRightPanelStartDate}
             setRightPanelEndDate={setRightPanelEndDate}
+            state={usState}
           />
         )}
         {genPopPerSwitch && ( // Display if genPopSwitch is set to true
@@ -625,6 +720,7 @@ export const HeatMap = () => {
             rightPanelEndDate={rightPanelEndDate}
             setRightPanelStartDate={setRightPanelStartDate}
             setRightPanelEndDate={setRightPanelEndDate}
+            state={usState}
           />
         )}
         {popupVisible &&
@@ -655,6 +751,17 @@ export const HeatMap = () => {
               cursorY={cursorY}
               display={popupVisible}
               popupValuesObj={genPopPer}
+            />
+          )}
+        {popupVisible &&
+          popupString && ( // Show map popup if popupVisible is set to true and properties
+            // exist in genPopPer
+            <MapPopup
+              cursorX={cursorX}
+              cursorY={cursorY}
+              display={popupVisible}
+              usingString={true}
+              commentString={popupString}
             />
           )}
         {isLoading && <LoadingScreen />}

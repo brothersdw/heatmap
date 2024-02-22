@@ -11,6 +11,7 @@ export const RightPanel = ({
   disease,
   currentSwitch,
   countyMapData,
+  state,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
@@ -63,6 +64,7 @@ export const RightPanel = ({
               chartTitle={title}
               startDate={rightPanelStartDate}
               endDate={rightPanelEndDate}
+              state={state}
             />
           )}
         </>

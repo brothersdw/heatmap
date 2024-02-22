@@ -7,6 +7,7 @@ export const DatePicker = ({
   setDate1,
   setDate2,
   setData1,
+  state,
 }) => {
   return (
     <div className="date-picker-container">
@@ -61,7 +62,7 @@ export const DatePicker = ({
           <div className="date-element">
             <button
               onClick={async () => {
-                const currentSetDate = await getCountyMapData(date1);
+                const currentSetDate = await getCountyMapData(state, date1);
                 setData1(currentSetDate.data);
               }}
             >

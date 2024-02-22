@@ -33,6 +33,7 @@ export const LineChart = ({
   disease,
   currentSwitch,
   countyMapData,
+  state,
 }) => {
   const [graphData, setGraphData] = useState();
   useEffect(() => {
@@ -43,7 +44,7 @@ export const LineChart = ({
         (c) => c.properties.county === county
       );
       console.log("testData:", testData);
-      const getGraphData = await getMapLineGraphData(startDate, endDate);
+      const getGraphData = await getMapLineGraphData(state, startDate, endDate);
       const extractGraphData = getGraphData.data
         .filter((d) => d.county === county)
         .map((c) => JSON.parse(c.incidences))
