@@ -25,9 +25,7 @@ const allStatesFillProperties = mapLayers.allStatesFillProperties;
 const publicToken = require("../../tokens.json").publicToken; // Can exchange this for your own mapbox token
 const diseases = await getDiseases(); // Await fetch function for diseases and set diseases to response
 const date = new Date();
-const dateToISOString = new Date(
-  date.setDate(date.getDate() - 1)
-).toISOString();
+const dateToISOString = new Date(date.setDate(date.getDate())).toISOString();
 const currentDayStart = dateToISOString.split("T")[0];
 const currentDayEnd = dateToISOString.split("T")[0];
 const getAllStateBoundaries = await getStateMapData();
@@ -48,7 +46,8 @@ mapboxgl.accessToken = publicToken; // !Important you have to have this or you w
 export const HeatMap = () => {
   const [countyMapData, setCountyMapData] = useState({});
   const [stateMapData, setStateMapData] = useState({});
-  const [usState, setUsState] = useState("tx");
+  const [usState, setUsState] = useState(["fl", "ga"]);
+  const [currentUsState, setCurrentUsState] = useState(usState);
   // let countyData;
   // let stateData;
   // let stateMapData;
@@ -84,6 +83,7 @@ export const HeatMap = () => {
   const [toggleState, setToggleState] = useState({}); // toggleState for toggle switch
   const [genPopSwitch, setGenPopSwitch] = useState(false); // State for genPop toggle switch
   const [genPopPerSwitch, setGenPopPerSwitch] = useState(false); // State for genPop percentage toggle switch
+  const [compareSwitch, setCompareSwitch] = useState(false); // State for compareSwitch toggle switch
   const [genPop, setGenPop] = useState({}); // Controls what is displayed in the popup for genPop statistics
   const [genPopPer, setGenPopPer] = useState({}); // Controls what is displayed in the popup for genPop statistics
   const [rightPanelStartDate, setRightPanelStartDate] =
@@ -107,26 +107,27 @@ export const HeatMap = () => {
   };
   useEffect(() => {
     setIsLoading(true);
-    const stateGenPopulationTotal = countyMapData?.features?.reduce(
-      // Summing all county populations for state population
-      (acc, curr) => {
-        return acc + curr.properties.genPopulation;
-      },
-      0
-    );
+    console.log("county map data:", countyMapData);
+    // const stateGenPopulationTotal = countyMapData?.features?.reduce(
+    //   // Summing all county populations for state population
+    //   (acc, curr) => {
+    //     return acc + curr.properties.genPopulation;
+    //   },
+    //   0
+    // );
     let countyCount = 0;
     countyMapData?.features?.map((c) => {
       countyCount++;
     });
-    const stateGenPopulationPerSumTotal = countyMapData?.features?.reduce(
-      (acc, curr) => {
-        return acc + curr.properties[`${disease}_cases_percentage`];
-      },
-      0
-    );
+    // const stateGenPopulationPerSumTotal = countyMapData?.features?.reduce(
+    //   (acc, curr) => {
+    //     return acc + curr.properties[`${disease}_cases_percentage`];
+    //   },
+    //   0
+    // );
 
-    const stateGenPopulationPerTotal =
-      stateGenPopulationPerSumTotal / countyCount;
+    // const stateGenPopulationPerTotal =
+    // stateGenPopulationPerSumTotal / countyCount;
     // Reset states
     setSelectedCases({});
     setSelectedGenPop({});
@@ -208,7 +209,7 @@ export const HeatMap = () => {
         map.addLayer(
           addMapLayer(
             genPopStateLayerProperties,
-            stateGenPopulationTotal,
+            // stateGenPopulationTotal,
             "maxzoom",
             false
           ),
@@ -226,7 +227,7 @@ export const HeatMap = () => {
         map.addLayer(
           addMapLayer(
             genPopPerStateLayerProperties,
-            stateGenPopulationPerTotal,
+            // stateGenPopulationPerTotal,
             "maxzoom",
             false
           ),
@@ -410,7 +411,7 @@ export const HeatMap = () => {
           return {
             ...gp,
             State: state,
-            "General Population": friendlyNumber(stateGenPopulationTotal),
+            // "General Population": friendlyNumber(stateGenPopulationTotal),
           };
         });
       });
@@ -465,14 +466,43 @@ export const HeatMap = () => {
             ...gp,
             State: state,
             Disease: disease_description,
-            "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
-              2
-            )}%`,
+            // "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
+            //   2
+            // )}%`,
           };
         });
       });
 
       // When county is clicked set selectedCounty and set selectedCases {
+
+      map.on("click", "all-states-fill", (e) => {
+        console.log(e.features[0].properties.state_ab);
+        // console.log(
+        //   "state bool:",
+        //   String(usState).toUpperCase() !==
+        //     String(e.features[0].properties.state_ab).toUpperCase()
+        // );
+        // if (usState.length > 1) {
+        // const state_ab = e.features[0].properties.state_ab;
+        // setUsState((s) => [...s, state_ab]);
+        // console.log(usState);
+        // }
+        // if (usState.length === 1) {
+        //   console.log("usState:", usState);
+        console.log("heatmap features:", e.features);
+        const stateChosen = usState.filter(
+          (s, idx) =>
+            String(s).toUpperCase() ===
+            String(e.features[0].properties.state_ab).toUpperCase()
+        ).length;
+        // stateChosen;
+        console.log("state chosen:", stateChosen);
+        !stateChosen &&
+          setUsState((s) => [...s, e.features[0].properties.state_ab]);
+        // }
+        console.log("usStates:", usState);
+      });
+
       map.on("click", "counties", (e) => {
         setSelectedState("");
         setSelectedCounty(e.features[0].properties.county); // Set to county that is currently clicked
@@ -546,7 +576,7 @@ export const HeatMap = () => {
         setSelectedGenPop((c) => {
           return {
             ...c,
-            "General Population": friendlyNumber(stateGenPopulationTotal),
+            // "General Population": friendlyNumber(stateGenPopulationTotal),
           };
         });
       });
@@ -590,16 +620,11 @@ export const HeatMap = () => {
           return {
             ...c,
             Disease: disease_description,
-            "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
-              2
-            )}%`,
+            // "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
+            //   2
+            // )}%`,
           };
         });
-      });
-
-      map.on("click", "all-states-fill", (e) => {
-        console.log("all states features:", e.features[0]);
-        setUsState(e.features[0].properties.state_ab);
       });
       // }
 
@@ -658,6 +683,8 @@ export const HeatMap = () => {
           setGenPopSwitch={setGenPopSwitch}
           genPopPerSwitch={genPopPerSwitch}
           setGenPopPerSwitch={setGenPopPerSwitch}
+          compareSwitch={compareSwitch}
+          setCompareSwitch={setCompareSwitch}
           toggleState={toggleState}
           setToggleState={setToggleState}
           leftPanelDate={leftPanelDate}

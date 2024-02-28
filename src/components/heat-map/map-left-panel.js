@@ -21,6 +21,8 @@ export const LeftPanel = ({
   setGenPopSwitch,
   genPopPerSwitch,
   setGenPopPerSwitch,
+  compareSwitch,
+  setCompareSwitch,
   leftPanelDate,
   setLeftPanelDate,
   setData1,
@@ -34,6 +36,8 @@ export const LeftPanel = ({
   useEffect(() => {
     if (toggleState.label === "Case Information" && !toggleState.on) {
       setGenPopSwitch(false);
+      setGenPopPerSwitch(false);
+      setCompareSwitch(false);
     }
     if (toggleState.label === "Case Information" && toggleState.on) {
       setCasesSwitch(false);
@@ -47,6 +51,7 @@ export const LeftPanel = ({
       setCasesSwitch(false);
       setGenPopPerSwitch(false);
       setCaseInfoSwitch(false);
+      setCompareSwitch(false);
     }
     if (
       toggleState.label === "Case Percentage of General Population" &&
@@ -54,6 +59,11 @@ export const LeftPanel = ({
     ) {
       setCasesSwitch(false);
       setGenPopSwitch(false);
+      // setGenPopPerSwitch(true);
+    }
+    if (toggleState.label === "Compare State Data" && !toggleState.on) {
+      setGenPopSwitch(false);
+      // setGenPopPerSwitch(false);
       // setGenPopPerSwitch(true);
     }
   });
@@ -213,6 +223,12 @@ export const LeftPanel = ({
           />
         )
       ) : null}
+      <ToggleSwitch
+        switchLabel={"Compare State Data"}
+        setToggleState={setToggleState}
+        toggleSwitch={compareSwitch}
+        setToggleSwitch={setCompareSwitch}
+      />
     </SlidingPanel>
   );
 };

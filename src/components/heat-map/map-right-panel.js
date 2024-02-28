@@ -54,7 +54,7 @@ export const RightPanel = ({
             setDate1={setRightPanelStartDate}
             setDate2={setRightPanelEndDate}
           />
-          {rightPanelInfo && county && (
+          {rightPanelInfo && county ? (
             <LineChart
               countyMapData={countyMapData}
               currentSwitch={currentSwitch}
@@ -66,6 +66,8 @@ export const RightPanel = ({
               endDate={rightPanelEndDate}
               state={state}
             />
+          ) : (
+            <div style={{ color: "white", zIndex: 2 }}>Loading Graph...</div>
           )}
         </>
       )}
