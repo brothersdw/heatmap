@@ -107,27 +107,55 @@ export const HeatMap = () => {
   };
   useEffect(() => {
     setIsLoading(true);
-    console.log("county map data:", countyMapData);
-    // const stateGenPopulationTotal = countyMapData?.features?.reduce(
-    //   // Summing all county populations for state population
-    //   (acc, curr) => {
-    //     return acc + curr.properties.genPopulation;
-    //   },
-    //   0
-    // );
-    let countyCount = 0;
-    countyMapData?.features?.map((c) => {
-      countyCount++;
+    // console.log("county map data:", countyMapData);
+    const stateGenPopulationTotal = countyMapData?.features?.map((feature) => {
+      return {
+        state_ab: feature[0].properties.state_ab,
+        genPop: feature.reduce(
+          // Summing all county populations for state population
+          (acc, curr) => {
+            return acc + curr.properties.genPopulation;
+          },
+          0
+        ),
+      };
     });
-    // const stateGenPopulationPerSumTotal = countyMapData?.features?.reduce(
-    //   (acc, curr) => {
-    //     return acc + curr.properties[`${disease}_cases_percentage`];
-    //   },
-    //   0
-    // );
+    let countyCount = 0;
+    const countyCounts = countyMapData?.features?.map((c) => {
+      return {
+        state_ab: c[0].properties.state_ab,
+        countyCount: c.map((cc) => cc).length,
+      };
+    });
+    const stateGenPopulationPerSumTotal = countyMapData?.features?.map(
+      (feature) => {
+        return {
+          state_ab: feature[0].properties.state_ab,
+          genPopPer: feature.reduce((acc, curr) => {
+            return acc + curr.properties[`${disease}_cases_percentage`];
+          }, 0),
+        };
+      }
+    );
 
-    // const stateGenPopulationPerTotal =
-    // stateGenPopulationPerSumTotal / countyCount;
+    const stateGenPopulationPerTotal = stateGenPopulationPerSumTotal?.map(
+      (statePer) => {
+        const statePercent =
+          statePer.genPopPer /
+          countyCounts.filter((c) => c.state_ab === statePer.state_ab)[0]
+            .countyCount;
+        return {
+          state_ab: statePer.state_ab,
+          percentage: statePercent,
+        };
+      }
+    );
+
+    console.log("state GenPOp total:", stateGenPopulationTotal);
+    console.log("county counts:", countyCounts);
+    console.log("state GenPopPer total:", stateGenPopulationPerSumTotal);
+    console.log("state GenPopPerTotal total:", stateGenPopulationPerTotal);
+    console.log("county data:", countyMapData);
     // Reset states
     setSelectedCases({});
     setSelectedGenPop({});
@@ -158,14 +186,8 @@ export const HeatMap = () => {
     // Map on load event
     map.on("load", (e) => {
       // Add map sources {
-      addMapSource("counties", "geojson", countyMapData);
-      addMapSource("state", "geojson", stateMapData);
-      addMapSource("gen-pop-county", "geojson", countyMapData);
-      addMapSource("gen-pop-state", "geojson", stateMapData);
-      addMapSource("gen-pop-per-county", "geojson", countyMapData);
-      addMapSource("gen-pop-per-state", "geojson", stateMapData);
+
       addMapSource("all-states", "geojson", allStateBoundaries);
-      //}
 
       map.addLayer(
         addMapLayer(
@@ -189,475 +211,522 @@ export const HeatMap = () => {
           "transparent"
         )
       );
-
-      // Adding map layers conditionally {
-      casesSwitch &&
-        map.addLayer(
-          addMapLayer(countiesLayerProperties, disease, "minzoom"),
-          "building"
-        ) &&
-        map.addLayer(
-          addMapLayer(stateLayerProperties, disease, "maxzoom"),
-          "building"
-        );
-
-      genPopSwitch &&
-        map.addLayer(
-          addMapLayer(genPopCountyLayerProperties, "genPopulation", "minzoom"),
-          "building"
-        ) &&
-        map.addLayer(
-          addMapLayer(
-            genPopStateLayerProperties,
-            // stateGenPopulationTotal,
-            "maxzoom",
-            false
-          ),
-          "building"
-        );
-      genPopPerSwitch &&
-        map.addLayer(
-          addMapLayer(
-            genPopPerCountyLayerProperties,
-            `${disease}_cases_percentage`,
-            "minzoom"
-          ),
-          "building"
-        ) &&
-        map.addLayer(
-          addMapLayer(
-            genPopPerStateLayerProperties,
-            // stateGenPopulationPerTotal,
-            "maxzoom",
-            false
-          ),
-          "building"
-        );
-      // }
-
-      // When the map is moved (e.g. grabbed and rotated, zoom out, zoom in, etc...) set lng and lat
-      // to current value with fixed decimal figure of 4 and set zoom to current zoom with fixed decimal figure of 2 {
-      map.on("move", "counties", () => {
-        setLng(map.getCenter().lng.toFixed(4));
-        setLat(map.getCenter().lat.toFixed(4));
-        setZoom(map.getZoom().toFixed(2));
-      });
-      map.on("move", "state", () => {
-        setLng(map.getCenter().lng.toFixed(4));
-        setLat(map.getCenter().lat.toFixed(4));
-        setZoom(map.getZoom().toFixed(2));
-      });
-
-      map.on("move", "gen-pop-county", () => {
-        setLng(map.getCenter().lng.toFixed(4));
-        setLat(map.getCenter().lat.toFixed(4));
-        setZoom(map.getZoom().toFixed(2));
-      });
-
-      map.on("move", "gen-pop-state", () => {
-        setLng(map.getCenter().lng.toFixed(4));
-        setLat(map.getCenter().lat.toFixed(4));
-        setZoom(map.getZoom().toFixed(2));
-      });
-
-      map.on("move", "gen-pop-per-county", () => {
-        setLng(map.getCenter().lng.toFixed(4));
-        setLat(map.getCenter().lat.toFixed(4));
-        setZoom(map.getZoom().toFixed(2));
-      });
-
-      map.on("move", "gen-pop-per-state", () => {
-        setLng(map.getCenter().lng.toFixed(4));
-        setLat(map.getCenter().lat.toFixed(4));
-        setZoom(map.getZoom().toFixed(2));
-      });
-      // }
-
-      // When cursor enters boundaries set popupVisible to true and change cursor to a "pointer" from "grab" {
-      map.on("mouseenter", "all-states-fill", (e) => {
-        setPopupVisible(true);
-        setPopupString("Click state to view data");
-        map.getCanvas().style.cursor = "pointer";
-      });
-
-      map.on("mouseenter", "counties", (e) => {
-        setPopupVisible(true);
-        setPopupString();
-        map.getCanvas().style.cursor = "pointer";
-      });
-
-      map.on("mouseenter", "state", (e) => {
-        setPopupVisible(true);
-        setPopupString();
-        map.getCanvas().style.cursor = "pointer";
-      });
-
-      map.on("mouseenter", "gen-pop-county", (e) => {
-        setPopupVisible(true);
-        map.getCanvas().style.cursor = "pointer";
-      });
-
-      map.on("mouseenter", "gen-pop-state", (e) => {
-        setPopupVisible(true);
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseenter", "gen-pop-per-county", (e) => {
-        setPopupVisible(true);
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseenter", "gen-pop-per-state", (e) => {
-        setPopupVisible(true);
-        map.getCanvas().style.cursor = "pointer";
-      });
-      // }
-
-      // When the cursor is moving within boundaries of Florida set cursorx and y, set county and set cases for each layer
-      // {
-      map.on("mousemove", "all-states-fill", (e) => {
-        setGenPop({});
-        setCases({});
-        setGenPopPer({});
-        setPopupString("Click to view state data");
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-      });
-
-      map.on("mousemove", "counties", (e) => {
-        setCases({});
-        setPopupString();
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-
-        const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
-        // for the county the cursor is currently in. Used in Databox and MapPopup components
-        const countiesCounty = e.features[0].properties.county;
-
-        // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
-        // in MapPopup component.
-        // const numOfCases = friendlyNumber(diseaseCases);
-        // Set cases to object with cases and disease
-        setCases((c) => {
-          return {
-            ...c,
-            County: countiesCounty,
-            Disease: disease_description,
-            Cases: friendlyNumber(diseaseCases),
+      countyMapData &&
+        usState.map((uss, idx) => {
+          countyMapData?.features?.length > 0 &&
+            console.log("county map feature:", countyMapData.features[idx]);
+          const currentCountyMapData = {
+            type: countyMapData?.type,
+            features:
+              countyMapData?.features?.length > 0 &&
+              countyMapData?.features[idx],
           };
+          addMapSource(`counties-${idx}`, "geojson", currentCountyMapData);
+          addMapSource(`state-${idx}`, "geojson", stateMapData);
+          addMapSource(
+            `gen-pop-county-${idx}`,
+            "geojson",
+            currentCountyMapData
+          );
+          addMapSource(`gen-pop-state-${idx}`, "geojson", stateMapData);
+          addMapSource(
+            `gen-pop-per-county-${idx}`,
+            "geojson",
+            countyMapData[idx]
+          );
+          addMapSource(`gen-pop-per-state-${idx}`, "geojson", stateMapData);
+          //}
+
+          // Adding map layers conditionally {
+          const countyLayer = countiesLayerProperties;
+          countyLayer.id = `counties-${idx + 1}`;
+          countyLayer.source = `counties-${idx + 1}`;
+          countiesLayerProperties.id = `counties-${idx}`;
+
+          console.log("county layer properties:", countyLayer);
+          countiesLayerProperties.source = `counties-${idx}`;
+          stateLayerProperties.id = `state-${idx}`;
+          stateLayerProperties.source = `state-${idx}`;
+          console.log("index:", idx);
+          casesSwitch &&
+            map.addLayer(
+              addMapLayer(countiesLayerProperties, disease, "minzoom"),
+              "building"
+            ) &&
+            map.addLayer(
+              addMapLayer(stateLayerProperties, disease, "maxzoom"),
+              "building"
+            );
+
+          genPopSwitch &&
+            map.addLayer(
+              addMapLayer(
+                genPopCountyLayerProperties,
+                "genPopulation",
+                "minzoom"
+              ),
+              "building"
+            ) &&
+            map.addLayer(
+              addMapLayer(
+                genPopStateLayerProperties,
+                stateGenPopulationTotal,
+                "maxzoom",
+                false
+              ),
+              "building"
+            );
+          genPopPerSwitch &&
+            map.addLayer(
+              addMapLayer(
+                genPopPerCountyLayerProperties,
+                `${disease}_cases_percentage`,
+                "minzoom"
+              ),
+              "building"
+            ) &&
+            map.addLayer(
+              addMapLayer(
+                genPopPerStateLayerProperties,
+                stateGenPopulationPerTotal,
+                "maxzoom",
+                false
+              ),
+              "building"
+            );
+          // }
+
+          // When the map is moved (e.g. grabbed and rotated, zoom out, zoom in, etc...) set lng and lat
+          // to current value with fixed decimal figure of 4 and set zoom to current zoom with fixed decimal figure of 2 {
+          map.on("move", `counties-${idx}`, () => {
+            setLng(map.getCenter().lng.toFixed(4));
+            setLat(map.getCenter().lat.toFixed(4));
+            setZoom(map.getZoom().toFixed(2));
+          });
+          map.on("move", `state-${idx}`, () => {
+            setLng(map.getCenter().lng.toFixed(4));
+            setLat(map.getCenter().lat.toFixed(4));
+            setZoom(map.getZoom().toFixed(2));
+          });
+
+          map.on("move", `gen-pop-county-${idx}`, () => {
+            setLng(map.getCenter().lng.toFixed(4));
+            setLat(map.getCenter().lat.toFixed(4));
+            setZoom(map.getZoom().toFixed(2));
+          });
+
+          map.on("move", `gen-pop-state-${idx}`, () => {
+            setLng(map.getCenter().lng.toFixed(4));
+            setLat(map.getCenter().lat.toFixed(4));
+            setZoom(map.getZoom().toFixed(2));
+          });
+
+          map.on("move", `gen-pop-per-county-${idx}`, () => {
+            setLng(map.getCenter().lng.toFixed(4));
+            setLat(map.getCenter().lat.toFixed(4));
+            setZoom(map.getZoom().toFixed(2));
+          });
+
+          map.on("move", `gen-pop-per-state-${idx}`, () => {
+            setLng(map.getCenter().lng.toFixed(4));
+            setLat(map.getCenter().lat.toFixed(4));
+            setZoom(map.getZoom().toFixed(2));
+          });
+          // }
+
+          // When cursor enters boundaries set popupVisible to true and change cursor to a "pointer" from "grab" {
+          map.on("mouseenter", "all-states-fill", (e) => {
+            setPopupVisible(true);
+            setPopupString("Click state to view data");
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseenter", `counties-${idx}`, (e) => {
+            setPopupVisible(true);
+            setPopupString();
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseenter", `state-${idx}`, (e) => {
+            setPopupVisible(true);
+            setPopupString();
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseenter", `gen-pop-county-${idx}`, (e) => {
+            setPopupVisible(true);
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseenter", `gen-pop-state-${idx}`, (e) => {
+            setPopupVisible(true);
+            map.getCanvas().style.cursor = "pointer";
+          });
+          map.on("mouseenter", `gen-pop-per-county-${idx}`, (e) => {
+            setPopupVisible(true);
+            map.getCanvas().style.cursor = "pointer";
+          });
+          map.on("mouseenter", `gen-pop-per-state-${idx}`, (e) => {
+            setPopupVisible(true);
+            map.getCanvas().style.cursor = "pointer";
+          });
+          // }
+
+          // When the cursor is moving within boundaries of Florida set cursorx and y, set county and set cases for each layer
+          // {
+          map.on("mousemove", "all-states-fill", (e) => {
+            setGenPop({});
+            setCases({});
+            setGenPopPer({});
+            setPopupString("Click to view state data");
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+          });
+
+          map.on("mousemove", `counties-${idx}`, (e) => {
+            setCases({});
+            setPopupString();
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+
+            const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
+            // for the county the cursor is currently in. Used in Databox and MapPopup components
+            const countiesCounty = e.features[0].properties.county;
+
+            // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
+            // in MapPopup component.
+            // const numOfCases = friendlyNumber(diseaseCases);
+            // Set cases to object with cases and disease
+            setCases((c) => {
+              return {
+                ...c,
+                County: countiesCounty,
+                Disease: disease_description,
+                Cases: friendlyNumber(diseaseCases),
+              };
+            });
+          });
+
+          map.on("mousemove", `state-${idx}`, (e) => {
+            setCases({});
+            setPopupString();
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+
+            const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
+            // for the county the cursor is currently in. Used in Databox and MapPopup components
+            const state = e.features[0].properties.state;
+
+            // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
+            // in MapPopup component.
+
+            // Set cases to object with cases and disease
+            setCases((c) => {
+              return {
+                ...c,
+                State: state,
+                Disease: disease_description,
+                Cases: friendlyNumber(diseaseCases),
+              };
+            });
+          });
+
+          map.on("mousemove", `gen-pop-county-${idx}`, (e) => {
+            setGenPop({});
+            setPopupString();
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+
+            const genPopCounty = e.features[0].properties.county;
+            const genPopulation = e.features[0].properties["genPopulation"]; // Set to value of current genPopulation
+            // for the county the cursor is currently in. Used in Databox and MapPopup components
+
+            // Set cases to object with cases and disease
+            setGenPop((gp) => {
+              return {
+                ...gp,
+                County: genPopCounty,
+                "General Population": friendlyNumber(genPopulation),
+              };
+            });
+          });
+
+          map.on("mousemove", `gen-pop-state-${idx}`, (e) => {
+            setGenPop({});
+            setPopupString();
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+            // Set to state that the cursor is currently in
+            const state = e.features[0].properties.state;
+
+            // Set genPop to object with state and "General Population"
+            setGenPop((gp) => {
+              return {
+                ...gp,
+                State: state,
+                "General Population": friendlyNumber(stateGenPopulationTotal),
+              };
+            });
+          });
+
+          // When the cursor is moving within county boundaries of Florida set cursorx and y, set county and set genPop {
+          map.on("mousemove", `gen-pop-per-county-${idx}`, (e) => {
+            setGenPop({});
+            setPopupString();
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+
+            const genPopPerCounty = e.features[0].properties.county;
+            // const genPopulationPer =
+            //   e.features[0].properties[`${disease}_cases_percentage`]; // Set to value of current genPopulation
+            // // for the county the cursor is currently in. Used in Databox and MapPopup components
+
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description;
+            const genPopulationPer =
+              (e.features[0].properties[`${disease}`] /
+                e.features[0].properties["genPopulation"]) *
+              100;
+
+            // Set cases to object with cases and disease
+            setGenPopPer((gp) => {
+              return {
+                ...gp,
+                County: genPopPerCounty,
+                Disease: disease_description,
+                "Case Percentage of Population": `${genPopulationPer.toFixed(
+                  2
+                )}%`,
+              };
+            });
+          });
+
+          map.on("mousemove", `gen-pop-per-state-${idx}`, (e) => {
+            setGenPopPer({});
+            setPopupString();
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+            // Set to state that the cursor is currently in
+            const state = e.features[0].properties.state;
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description;
+
+            // Set genPop to object with state and "General Population"
+            setGenPopPer((gp) => {
+              return {
+                ...gp,
+                State: state,
+                Disease: disease_description,
+                "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
+                  2
+                )}%`,
+              };
+            });
+          });
+
+          // When county is clicked set selectedCounty and set selectedCases {
+
+          map.on("click", "all-states-fill", (e) => {
+            console.log(e.features[0].properties.state_ab);
+            // console.log(
+            //   "state bool:",
+            //   String(usState).toUpperCase() !==
+            //     String(e.features[0].properties.state_ab).toUpperCase()
+            // );
+            // if (usState.length > 1) {
+            // const state_ab = e.features[0].properties.state_ab;
+            // setUsState((s) => [...s, state_ab]);
+            // console.log(usState);
+            // }
+            // if (usState.length === 1) {
+            //   console.log("usState:", usState);
+            console.log("heatmap features:", e.features);
+            const stateChosen = usState.filter(
+              (s, idx) =>
+                String(s).toUpperCase() ===
+                String(e.features[0].properties.state_ab).toUpperCase()
+            ).length;
+            // stateChosen;
+            const currentState_ab = String(
+              e.features[0].properties.state_ab
+            ).toUpperCase();
+            console.log("state chosen:", stateChosen);
+            !stateChosen && setUsState((s) => [...s, currentState_ab]);
+            console.log("state_ab:", e.features[0].properties.state_ab);
+            // }
+            console.log("usStates:", usState);
+          });
+
+          map.on("click", `counties-${idx}`, (e) => {
+            setSelectedState("");
+            setSelectedCounty(e.features[0].properties.county); // Set to county that is currently clicked
+            const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
+            // for the county that is currently clicked. Used in MapPopup components
+
+            // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
+            // in MapPopup component.
+            // Set cases to object with cases and disease
+            setSelectedCases((c) => {
+              return {
+                ...c,
+                Disease: disease_description,
+                Cases: friendlyNumber(diseaseCases),
+              };
+            });
+          });
+          // }
+
+          // When boundary in layer is clicked set selectedState and set selectedCases {
+          map.on("click", `state-${idx}`, (e) => {
+            setCases({});
+            setSelectedCounty("");
+            setSelectedState(e.features[0].properties.state);
+            setCursorX(e.point.x);
+            setCursorY(e.point.y);
+            const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
+            // for the county the cursor is currently in. Used in Databox and MapPopup components
+
+            // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
+            // in MapPopup component.
+
+            // Set cases to object with cases and disease
+            setSelectedCases((c) => {
+              return {
+                ...c,
+                Disease: disease_description,
+                Cases: friendlyNumber(diseaseCases),
+              };
+            });
+          });
+
+          map.on("click", `gen-pop-county-${idx}`, (e) => {
+            setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
+            const genPopulation = e.features[0].properties["genPopulation"]; // Set to value of current disease_cases_key
+            // for the county the cursor is currently in. Used in Databox and MapPopup components
+
+            // Set selectedGenPop to object with General Population
+            setSelectedGenPop((c) => {
+              return {
+                ...c,
+                "General Population": friendlyNumber(genPopulation),
+              };
+            });
+          });
+
+          map.on("click", `gen-pop-state-${idx}`, (e) => {
+            setSelectedCounty("");
+            setSelectedState(e.features[0].properties.state); // Set to value of current state that has been clicked
+            // MapPopup components
+
+            // Set selectedGenPop to object with General Population
+            setSelectedGenPop((c) => {
+              return {
+                ...c,
+                "General Population": friendlyNumber(stateGenPopulationTotal),
+              };
+            });
+          });
+
+          map.on("click", `gen-pop-per-county-${idx}`, (e) => {
+            setSelectedGenPopPer({});
+            setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description;
+            const genPopulationPer =
+              e.features[0].properties[`${disease}_cases_percentage`]; // Set to value of current disease_cases_key
+            // for the county the cursor is currently in. Used in Databox and MapPopup components
+
+            // Set selectedGenPop to object with General Population
+            setSelectedGenPopPer((c) => {
+              return {
+                ...c,
+                Disease: disease_description,
+                "Case Percentage of Population": `${genPopulationPer.toFixed(
+                  2
+                )}%`,
+              };
+            });
+          });
+
+          map.on("click", `gen-pop-per-state-${idx}`, (e) => {
+            setSelectedGenPopPer({});
+            setSelectedCounty("");
+            setSelectedState(e.features[0].properties.state); // Set to value of current state that has been clicked
+            // MapPopup components
+
+            // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
+            const disease_data = diseases.data.filter(
+              (d) => d.disease_cases_key === disease
+            );
+            const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
+            // in MapPopup component.
+
+            // Set selectedGenPop to object with General Population
+            setSelectedGenPopPer((c) => {
+              return {
+                ...c,
+                Disease: disease_description,
+                "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
+                  2
+                )}%`,
+              };
+            });
+          });
+          // }
+
+          // When mouse leaves boundaries set popupVisible to false and set cursor back to "grab" from "pointer"
+          map.on("mouseleave", `counties-${idx}`, () => {
+            setPopupVisible(false);
+            // map.getCanvas().style.cursor = "grab";
+          });
+          map.on("mouseleave", `state-${idx}`, () => {
+            setPopupVisible(false);
+            // map.getCanvas().style.cursor = "grab";
+          });
+          map.on("mouseleave", `gen-pop-county-${idx}`, () => {
+            setPopupVisible(false);
+            // map.getCanvas().style.cursor = "grab";
+          });
+          map.on("mouseleave", `gen-pop-state-${idx}`, () => {
+            setPopupVisible(false);
+            // map.getCanvas().style.cursor = "grab";
+          });
+          map.on("mouseleave", `gen-pop-per-county-${idx}`, () => {
+            setPopupVisible(false);
+            // map.getCanvas().style.cursor = "grab";
+          });
+          map.on("mouseleave", `gen-pop-per-state-${idx}`, () => {
+            setPopupVisible(false);
+            // map.getCanvas().style.cursor = "grab";
+          });
+          map.on("mouseleave", "all-states-fill", (e) => {
+            setPopupVisible(false);
+            setPopupString();
+            map.getCanvas().style.cursor = "grab";
+          });
         });
-      });
-
-      map.on("mousemove", "state", (e) => {
-        setCases({});
-        setPopupString();
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-
-        const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
-        // for the county the cursor is currently in. Used in Databox and MapPopup components
-        const state = e.features[0].properties.state;
-
-        // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
-        // in MapPopup component.
-
-        // Set cases to object with cases and disease
-        setCases((c) => {
-          return {
-            ...c,
-            State: state,
-            Disease: disease_description,
-            Cases: friendlyNumber(diseaseCases),
-          };
-        });
-      });
-
-      map.on("mousemove", "gen-pop-county", (e) => {
-        setGenPop({});
-        setPopupString();
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-
-        const genPopCounty = e.features[0].properties.county;
-        const genPopulation = e.features[0].properties["genPopulation"]; // Set to value of current genPopulation
-        // for the county the cursor is currently in. Used in Databox and MapPopup components
-
-        // Set cases to object with cases and disease
-        setGenPop((gp) => {
-          return {
-            ...gp,
-            County: genPopCounty,
-            "General Population": friendlyNumber(genPopulation),
-          };
-        });
-      });
-
-      map.on("mousemove", "gen-pop-state", (e) => {
-        setGenPop({});
-        setPopupString();
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-        // Set to state that the cursor is currently in
-        const state = e.features[0].properties.state;
-
-        // Set genPop to object with state and "General Population"
-        setGenPop((gp) => {
-          return {
-            ...gp,
-            State: state,
-            // "General Population": friendlyNumber(stateGenPopulationTotal),
-          };
-        });
-      });
-
-      // When the cursor is moving within county boundaries of Florida set cursorx and y, set county and set genPop {
-      map.on("mousemove", "gen-pop-per-county", (e) => {
-        setGenPop({});
-        setPopupString();
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-
-        const genPopPerCounty = e.features[0].properties.county;
-        // const genPopulationPer =
-        //   e.features[0].properties[`${disease}_cases_percentage`]; // Set to value of current genPopulation
-        // // for the county the cursor is currently in. Used in Databox and MapPopup components
-
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description;
-        const genPopulationPer =
-          (e.features[0].properties[`${disease}`] /
-            e.features[0].properties["genPopulation"]) *
-          100;
-
-        // Set cases to object with cases and disease
-        setGenPopPer((gp) => {
-          return {
-            ...gp,
-            County: genPopPerCounty,
-            Disease: disease_description,
-            "Case Percentage of Population": `${genPopulationPer.toFixed(2)}%`,
-          };
-        });
-      });
-
-      map.on("mousemove", "gen-pop-per-state", (e) => {
-        setGenPopPer({});
-        setPopupString();
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-        // Set to state that the cursor is currently in
-        const state = e.features[0].properties.state;
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description;
-
-        // Set genPop to object with state and "General Population"
-        setGenPopPer((gp) => {
-          return {
-            ...gp,
-            State: state,
-            Disease: disease_description,
-            // "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
-            //   2
-            // )}%`,
-          };
-        });
-      });
-
-      // When county is clicked set selectedCounty and set selectedCases {
-
-      map.on("click", "all-states-fill", (e) => {
-        console.log(e.features[0].properties.state_ab);
-        // console.log(
-        //   "state bool:",
-        //   String(usState).toUpperCase() !==
-        //     String(e.features[0].properties.state_ab).toUpperCase()
-        // );
-        // if (usState.length > 1) {
-        // const state_ab = e.features[0].properties.state_ab;
-        // setUsState((s) => [...s, state_ab]);
-        // console.log(usState);
-        // }
-        // if (usState.length === 1) {
-        //   console.log("usState:", usState);
-        console.log("heatmap features:", e.features);
-        const stateChosen = usState.filter(
-          (s, idx) =>
-            String(s).toUpperCase() ===
-            String(e.features[0].properties.state_ab).toUpperCase()
-        ).length;
-        // stateChosen;
-        console.log("state chosen:", stateChosen);
-        !stateChosen &&
-          setUsState((s) => [...s, e.features[0].properties.state_ab]);
-        // }
-        console.log("usStates:", usState);
-      });
-
-      map.on("click", "counties", (e) => {
-        setSelectedState("");
-        setSelectedCounty(e.features[0].properties.county); // Set to county that is currently clicked
-        const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
-        // for the county that is currently clicked. Used in MapPopup components
-
-        // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
-        // in MapPopup component.
-        // Set cases to object with cases and disease
-        setSelectedCases((c) => {
-          return {
-            ...c,
-            Disease: disease_description,
-            Cases: friendlyNumber(diseaseCases),
-          };
-        });
-      });
-      // }
-
-      // When boundary in layer is clicked set selectedState and set selectedCases {
-      map.on("click", "state", (e) => {
-        setCases({});
-        setSelectedCounty("");
-        setSelectedState(e.features[0].properties.state);
-        setCursorX(e.point.x);
-        setCursorY(e.point.y);
-        const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
-        // for the county the cursor is currently in. Used in Databox and MapPopup components
-
-        // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
-        // in MapPopup component.
-
-        // Set cases to object with cases and disease
-        setSelectedCases((c) => {
-          return {
-            ...c,
-            Disease: disease_description,
-            Cases: friendlyNumber(diseaseCases),
-          };
-        });
-      });
-
-      map.on("click", "gen-pop-county", (e) => {
-        setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
-        const genPopulation = e.features[0].properties["genPopulation"]; // Set to value of current disease_cases_key
-        // for the county the cursor is currently in. Used in Databox and MapPopup components
-
-        // Set selectedGenPop to object with General Population
-        setSelectedGenPop((c) => {
-          return {
-            ...c,
-            "General Population": friendlyNumber(genPopulation),
-          };
-        });
-      });
-
-      map.on("click", "gen-pop-state", (e) => {
-        setSelectedCounty("");
-        setSelectedState(e.features[0].properties.state); // Set to value of current state that has been clicked
-        // MapPopup components
-
-        // Set selectedGenPop to object with General Population
-        setSelectedGenPop((c) => {
-          return {
-            ...c,
-            // "General Population": friendlyNumber(stateGenPopulationTotal),
-          };
-        });
-      });
-
-      map.on("click", "gen-pop-per-county", (e) => {
-        setSelectedGenPopPer({});
-        setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description;
-        const genPopulationPer =
-          e.features[0].properties[`${disease}_cases_percentage`]; // Set to value of current disease_cases_key
-        // for the county the cursor is currently in. Used in Databox and MapPopup components
-
-        // Set selectedGenPop to object with General Population
-        setSelectedGenPopPer((c) => {
-          return {
-            ...c,
-            Disease: disease_description,
-            "Case Percentage of Population": `${genPopulationPer.toFixed(2)}%`,
-          };
-        });
-      });
-
-      map.on("click", "gen-pop-per-state", (e) => {
-        setSelectedGenPopPer({});
-        setSelectedCounty("");
-        setSelectedState(e.features[0].properties.state); // Set to value of current state that has been clicked
-        // MapPopup components
-
-        // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
-        const disease_data = diseases.data.filter(
-          (d) => d.disease_cases_key === disease
-        );
-        const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
-        // in MapPopup component.
-
-        // Set selectedGenPop to object with General Population
-        setSelectedGenPopPer((c) => {
-          return {
-            ...c,
-            Disease: disease_description,
-            // "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
-            //   2
-            // )}%`,
-          };
-        });
-      });
-      // }
-
-      // When mouse leaves boundaries set popupVisible to false and set cursor back to "grab" from "pointer"
-      map.on("mouseleave", "counties", () => {
-        setPopupVisible(false);
-        // map.getCanvas().style.cursor = "grab";
-      });
-      map.on("mouseleave", "state", () => {
-        setPopupVisible(false);
-        // map.getCanvas().style.cursor = "grab";
-      });
-      map.on("mouseleave", "gen-pop-county", () => {
-        setPopupVisible(false);
-        // map.getCanvas().style.cursor = "grab";
-      });
-      map.on("mouseleave", "gen-pop-state", () => {
-        setPopupVisible(false);
-        // map.getCanvas().style.cursor = "grab";
-      });
-      map.on("mouseleave", "gen-pop-per-county", () => {
-        setPopupVisible(false);
-        // map.getCanvas().style.cursor = "grab";
-      });
-      map.on("mouseleave", "gen-pop-per-state", () => {
-        setPopupVisible(false);
-        // map.getCanvas().style.cursor = "grab";
-      });
-      map.on("mouseleave", "all-states-fill", (e) => {
-        setPopupVisible(false);
-        setPopupString();
-        map.getCanvas().style.cursor = "grab";
-      });
     });
     console.log("isLoading:", isLoading);
     setTimeout(() => {

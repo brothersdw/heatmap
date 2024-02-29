@@ -1,6 +1,5 @@
 {
   "countiesLayerProperties": {
-    "id": "counties",
     "zoomThreshold": 4.7,
     "stops": [
       [0, "#ebebeb"],
@@ -10,11 +9,9 @@
       [100000, "#4d15a1"],
       [200000, "#2c0566"]
     ],
-    "fillOpacity": 1,
-    "source": "counties"
+    "fillOpacity": 1
   },
   "stateLayerProperties": {
-    "id": "state",
     "zoomThreshold": 4.7,
     "stops": [
       [0, "#ebebeb"],
@@ -24,8 +21,7 @@
       [100000, "#4d15a1"],
       [200000, "#2c0566"]
     ],
-    "fillOpacity": 1,
-    "source": "state"
+    "fillOpacity": 1
   },
   "allStatesLineProperties": {
     "id": "all-states-line",
@@ -38,7 +34,6 @@
     "source": "all-states"
   },
   "genPopCountyLayerProperties": {
-    "id": "gen-pop-county",
     "zoomThreshold": 4.7,
     "stops": [
       [0, "#f2ffa5"],
@@ -48,11 +43,9 @@
       [400000, "#084924"],
       [500000, "#063a0b"]
     ],
-    "fillOpacity": 1,
-    "source": "gen-pop-county"
+    "fillOpacity": 1
   },
   "genPopStateLayerProperties": {
-    "id": "gen-pop-state",
     "zoomThreshold": 4.7,
     "stops": [
       [0, "#f2ffa5"],
@@ -62,27 +55,22 @@
       [400000, "#084924"],
       [500000, "#063a0b"]
     ],
-    "fillOpacity": 1,
-    "source": "gen-pop-state"
+    "fillOpacity": 1
   },
   "genPopPerCountyLayerProperties": {
-    "id": "gen-pop-per-county",
     "zoomThreshold": 4.7,
     "stops": [
       [0, "#fff702"],
       [100, "#ff4a0e"]
     ],
-    "fillOpacity": 1,
-    "source": "gen-pop-per-county"
+    "fillOpacity": 1
   },
   "genPopPerStateLayerProperties": {
-    "id": "gen-pop-per-state",
     "zoomThreshold": 4.7,
     "stops": [
       [0, "#fff702"],
       [100, "#ff4a0e"]
     ],
-    "fillOpacity": 1,
-    "source": "gen-pop-per-state"
+    "fillOpacity": 1
   }
 }
