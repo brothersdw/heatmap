@@ -48,7 +48,7 @@ mapboxgl.accessToken = publicToken; // !Important you have to have this or you w
 export const HeatMap = () => {
   const [countyMapData, setCountyMapData] = useState({});
   const [stateMapData, setStateMapData] = useState({});
-  const [usState, setUsState] = useState("tx");
+  const [usState, setUsState] = useState("fl");
   // let countyData;
   // let stateData;
   // let stateMapData;
@@ -599,7 +599,11 @@ export const HeatMap = () => {
 
       map.on("click", "all-states-fill", (e) => {
         console.log("all states features:", e.features[0]);
-        setUsState(e.features[0].properties.state_ab);
+        const currentState = String(
+          e.features[0].properties.state_ab
+        ).toUpperCase();
+        String(usState).toUpperCase() !== currentState &&
+          setUsState(currentState);
       });
       // }
 
