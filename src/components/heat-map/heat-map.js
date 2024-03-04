@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { getCountyMapData } from "../../api/get-counties-mapbox-data"; // Import function to fetch map data
 import { getStateMapData } from "../../api/get-state-mapbox-data";
 import { getDiseases } from "../../api/get-diseases"; // Import function to fetch diseases
+import { getMapLineGraphData } from "../../api/get-map-line-graph-data";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import "mapbox-gl/dist/mapbox-gl.css"; // !Important for map styling
 import {
@@ -41,13 +42,23 @@ diseases.data.sort((a, b) => {
   return textA < textB ? -1 : textA > textB ? 1 : 0;
 });
 
+const getRandomColor = () => {
+  return `#${Math.random().toString(16).substring(2, 10)}`;
+};
+
 mapboxgl.accessToken = publicToken; // !Important you have to have this or you will not be able display the map
 
 export const HeatMap = () => {
   const [countyMapData, setCountyMapData] = useState({});
   const [stateMapData, setStateMapData] = useState({});
   const [usState, setUsState] = useState(["fl", "ga"]);
+  const [graphData, setGraphData] = useState([]);
   const [currentUsState, setCurrentUsState] = useState(usState);
+  const [selectedCounty, setSelectedCounty] = useState(""); // Selected county for info panel display
+  const [selectedState, setSelectedState] = useState(""); // Selected state for info panel display
+  const [selectedCases, setSelectedCases] = useState({}); // Selected cases for info panel display
+  const [selectedGenPop, setSelectedGenPop] = useState({}); // Selected gen pop for info panel display
+  const [selectedGenPopPer, setSelectedGenPopPer] = useState({}); // Selected gen pop percentage for info panel display
   // let countyData;
   // let stateData;
   // let stateMapData;
@@ -73,11 +84,6 @@ export const HeatMap = () => {
   const [popupVisible, setPopupVisible] = useState(false); // Controls visible state of MapPopup
   const [cases, setCases] = useState({}); // Controls number of cases displayed in MapPopup and DataBox components as well as disease description in MapPopup
   const [disease, setDisease] = useState(diseases.data[0].disease_cases_key); // Controls the current disease that is chosen
-  const [selectedCounty, setSelectedCounty] = useState(""); // Selected county for info panel display
-  const [selectedState, setSelectedState] = useState(""); // Selected state for info panel display
-  const [selectedCases, setSelectedCases] = useState({}); // Selected cases for info panel display
-  const [selectedGenPop, setSelectedGenPop] = useState({}); // Selected gen pop for info panel display
-  const [selectedGenPopPer, setSelectedGenPopPer] = useState({}); // Selected gen pop percentage for info panel display
   const [caseInfoSwitch, setCaseInfoSwitch] = useState(true);
   const [casesSwitch, setCasesSwitch] = useState(true); // State for cases toggle switch
   const [toggleState, setToggleState] = useState({}); // toggleState for toggle switch
@@ -107,7 +113,6 @@ export const HeatMap = () => {
   };
   useEffect(() => {
     setIsLoading(true);
-    // console.log("county map data:", countyMapData);
     const stateGenPopulationTotal = countyMapData?.features?.map((feature) => {
       return {
         state_ab: feature[0].properties.state_ab,
@@ -151,11 +156,11 @@ export const HeatMap = () => {
       }
     );
 
-    console.log("state GenPOp total:", stateGenPopulationTotal);
-    console.log("county counts:", countyCounts);
-    console.log("state GenPopPer total:", stateGenPopulationPerSumTotal);
-    console.log("state GenPopPerTotal total:", stateGenPopulationPerTotal);
-    console.log("county data:", countyMapData);
+    // console.log("state GenPOp total:", stateGenPopulationTotal);
+    // console.log("county counts:", countyCounts);
+    // console.log("state GenPopPer total:", stateGenPopulationPerSumTotal);
+    // console.log("state GenPopPerTotal total:", stateGenPopulationPerTotal);
+    // console.log("county data:", countyMapData);
     // Reset states
     setSelectedCases({});
     setSelectedGenPop({});
@@ -197,7 +202,7 @@ export const HeatMap = () => {
           false,
           false,
           "line",
-          "transparent"
+          "white"
         )
       );
       map.addLayer(
@@ -211,10 +216,62 @@ export const HeatMap = () => {
           "transparent"
         )
       );
+
+      map.on("mouseenter", "all-states-fill", (e) => {
+        setPopupVisible(true);
+        setPopupString("Click state to view data");
+        map.getCanvas().style.cursor = "pointer";
+      });
+
+      map.on("mousemove", "all-states-fill", (e) => {
+        setGenPop({});
+        setCases({});
+        setGenPopPer({});
+        setPopupString("Click to view state data");
+        setCursorX(e.point.x);
+        setCursorY(e.point.y);
+      });
+
+      map.on("click", "all-states-fill", (e) => {
+        // console.log(e.features[0].properties.state_ab);
+        // console.log(
+        //   "state bool:",
+        //   String(usState).toUpperCase() !==
+        //     String(e.features[0].properties.state_ab).toUpperCase()
+        // );
+        // if (usState.length > 1) {
+        // const state_ab = e.features[0].properties.state_ab;
+        // setUsState((s) => [...s, state_ab]);
+        // console.log(usState);
+        // }
+        // if (usState.length === 1) {
+        //   console.log("usState:", usState);
+        // console.log("heatmap features:", e.features);
+        const stateChosen = usState.filter(
+          (s, idx) =>
+            String(s).toUpperCase() ===
+            String(e.features[0].properties.state_ab).toUpperCase()
+        ).length;
+        // stateChosen;
+        const currentState_ab = String(
+          e.features[0].properties.state_ab
+        ).toUpperCase();
+        // console.log("state chosen:", stateChosen);
+        !stateChosen && setUsState((s) => [...s, currentState_ab]);
+        // console.log("state_ab:", e.features[0].properties.state_ab);
+        // }
+        // console.log("usStates:", usState);
+      });
+
+      map.on("mouseleave", "all-states-fill", (e) => {
+        setPopupVisible(false);
+        setPopupString();
+        map.getCanvas().style.cursor = "grab";
+      });
       countyMapData &&
         usState.map((uss, idx) => {
-          countyMapData?.features?.length > 0 &&
-            console.log("county map feature:", countyMapData.features[idx]);
+          // countyMapData?.features?.length > 0 &&
+          // console.log("county map feature:", countyMapData.features[idx]);
           const currentCountyMapData = {
             type: countyMapData?.type,
             features:
@@ -243,11 +300,11 @@ export const HeatMap = () => {
           countyLayer.source = `counties-${idx + 1}`;
           countiesLayerProperties.id = `counties-${idx}`;
 
-          console.log("county layer properties:", countyLayer);
+          // console.log("county layer properties:", countyLayer);
           countiesLayerProperties.source = `counties-${idx}`;
           stateLayerProperties.id = `state-${idx}`;
           stateLayerProperties.source = `state-${idx}`;
-          console.log("index:", idx);
+          // console.log("index:", idx);
           casesSwitch &&
             map.addLayer(
               addMapLayer(countiesLayerProperties, disease, "minzoom"),
@@ -335,11 +392,6 @@ export const HeatMap = () => {
           // }
 
           // When cursor enters boundaries set popupVisible to true and change cursor to a "pointer" from "grab" {
-          map.on("mouseenter", "all-states-fill", (e) => {
-            setPopupVisible(true);
-            setPopupString("Click state to view data");
-            map.getCanvas().style.cursor = "pointer";
-          });
 
           map.on("mouseenter", `counties-${idx}`, (e) => {
             setPopupVisible(true);
@@ -374,14 +426,6 @@ export const HeatMap = () => {
 
           // When the cursor is moving within boundaries of Florida set cursorx and y, set county and set cases for each layer
           // {
-          map.on("mousemove", "all-states-fill", (e) => {
-            setGenPop({});
-            setCases({});
-            setGenPopPer({});
-            setPopupString("Click to view state data");
-            setCursorX(e.point.x);
-            setCursorY(e.point.y);
-          });
 
           map.on("mousemove", `counties-${idx}`, (e) => {
             setCases({});
@@ -538,38 +582,7 @@ export const HeatMap = () => {
 
           // When county is clicked set selectedCounty and set selectedCases {
 
-          map.on("click", "all-states-fill", (e) => {
-            console.log(e.features[0].properties.state_ab);
-            // console.log(
-            //   "state bool:",
-            //   String(usState).toUpperCase() !==
-            //     String(e.features[0].properties.state_ab).toUpperCase()
-            // );
-            // if (usState.length > 1) {
-            // const state_ab = e.features[0].properties.state_ab;
-            // setUsState((s) => [...s, state_ab]);
-            // console.log(usState);
-            // }
-            // if (usState.length === 1) {
-            //   console.log("usState:", usState);
-            console.log("heatmap features:", e.features);
-            const stateChosen = usState.filter(
-              (s, idx) =>
-                String(s).toUpperCase() ===
-                String(e.features[0].properties.state_ab).toUpperCase()
-            ).length;
-            // stateChosen;
-            const currentState_ab = String(
-              e.features[0].properties.state_ab
-            ).toUpperCase();
-            console.log("state chosen:", stateChosen);
-            !stateChosen && setUsState((s) => [...s, currentState_ab]);
-            console.log("state_ab:", e.features[0].properties.state_ab);
-            // }
-            console.log("usStates:", usState);
-          });
-
-          map.on("click", `counties-${idx}`, (e) => {
+          map.on("click", `counties-${idx}`, async (e) => {
             setSelectedState("");
             setSelectedCounty(e.features[0].properties.county); // Set to county that is currently clicked
             const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
@@ -582,6 +595,9 @@ export const HeatMap = () => {
             const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
             // in MapPopup component.
             // Set cases to object with cases and disease
+            const currentState = e.features[0].properties.state_ab;
+            const currentCounty = e.features[0].properties.county;
+
             setSelectedCases((c) => {
               return {
                 ...c,
@@ -721,14 +737,9 @@ export const HeatMap = () => {
             setPopupVisible(false);
             // map.getCanvas().style.cursor = "grab";
           });
-          map.on("mouseleave", "all-states-fill", (e) => {
-            setPopupVisible(false);
-            setPopupString();
-            map.getCanvas().style.cursor = "grab";
-          });
         });
     });
-    console.log("isLoading:", isLoading);
+    // console.log("isLoading:", isLoading);
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -777,6 +788,7 @@ export const HeatMap = () => {
             setRightPanelStartDate={setRightPanelStartDate} // Set date picker start date
             setRightPanelEndDate={setRightPanelEndDate} // Set date picker end date
             state={usState}
+            selectedState={selectedState}
           />
         )}
         {genPopSwitch && ( // Display if genPopSwitch is set to true
@@ -797,6 +809,7 @@ export const HeatMap = () => {
             setRightPanelStartDate={setRightPanelStartDate}
             setRightPanelEndDate={setRightPanelEndDate}
             state={usState}
+            selectedState={selectedState}
           />
         )}
         {genPopPerSwitch && ( // Display if genPopSwitch is set to true
@@ -817,6 +830,7 @@ export const HeatMap = () => {
             setRightPanelStartDate={setRightPanelStartDate}
             setRightPanelEndDate={setRightPanelEndDate}
             state={usState}
+            selectedState={selectedState}
           />
         )}
         {popupVisible &&
