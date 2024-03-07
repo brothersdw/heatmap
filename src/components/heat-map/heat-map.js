@@ -53,7 +53,7 @@ export const HeatMap = () => {
   const [stateMapData, setStateMapData] = useState({});
   const [usState, setUsState] = useState(["fl", "ga"]);
   const [graphData, setGraphData] = useState([]);
-  const [currentUsState, setCurrentUsState] = useState(usState);
+  const [currentUsState, setCurrentUsState] = useState();
   const [selectedCounty, setSelectedCounty] = useState(""); // Selected county for info panel display
   const [selectedState, setSelectedState] = useState(""); // Selected state for info panel display
   const [selectedCases, setSelectedCases] = useState({}); // Selected cases for info panel display
@@ -585,6 +585,8 @@ export const HeatMap = () => {
           map.on("click", `counties-${idx}`, async (e) => {
             setSelectedState("");
             setSelectedCounty(e.features[0].properties.county); // Set to county that is currently clicked
+            setCurrentUsState(e.features[0].properties.state_ab);
+            console.log("current state1:", e.features[0].properties.state_ab);
             const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
             // for the county that is currently clicked. Used in MapPopup components
 
@@ -613,6 +615,7 @@ export const HeatMap = () => {
             setCases({});
             setSelectedCounty("");
             setSelectedState(e.features[0].properties.state);
+            setCurrentUsState(e.features[0].properties.state_ab);
             setCursorX(e.point.x);
             setCursorY(e.point.y);
             const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
@@ -640,6 +643,8 @@ export const HeatMap = () => {
             const genPopulation = e.features[0].properties["genPopulation"]; // Set to value of current disease_cases_key
             // for the county the cursor is currently in. Used in Databox and MapPopup components
 
+            setCurrentUsState(e.features[0].properties.state_ab);
+
             // Set selectedGenPop to object with General Population
             setSelectedGenPop((c) => {
               return {
@@ -654,6 +659,8 @@ export const HeatMap = () => {
             setSelectedState(e.features[0].properties.state); // Set to value of current state that has been clicked
             // MapPopup components
 
+            setCurrentUsState(e.features[0].properties.state_ab);
+
             // Set selectedGenPop to object with General Population
             setSelectedGenPop((c) => {
               return {
@@ -666,6 +673,7 @@ export const HeatMap = () => {
           map.on("click", `gen-pop-per-county-${idx}`, (e) => {
             setSelectedGenPopPer({});
             setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
+            setCurrentUsState(e.features[0].properties.state_ab);
             const disease_data = diseases.data.filter(
               (d) => d.disease_cases_key === disease
             );
@@ -691,6 +699,7 @@ export const HeatMap = () => {
             setSelectedCounty("");
             setSelectedState(e.features[0].properties.state); // Set to value of current state that has been clicked
             // MapPopup components
+            setCurrentUsState(e.features[0].properties.state_ab);
 
             // Set to object that has a diseas_cases_key value of the currently set disease in the diseases array
             const disease_data = diseases.data.filter(
@@ -789,6 +798,7 @@ export const HeatMap = () => {
             setRightPanelEndDate={setRightPanelEndDate} // Set date picker end date
             state={usState}
             selectedState={selectedState}
+            currentUsState={currentUsState}
           />
         )}
         {genPopSwitch && ( // Display if genPopSwitch is set to true
@@ -810,6 +820,7 @@ export const HeatMap = () => {
             setRightPanelEndDate={setRightPanelEndDate}
             state={usState}
             selectedState={selectedState}
+            currentUsState={currentUsState}
           />
         )}
         {genPopPerSwitch && ( // Display if genPopSwitch is set to true
@@ -830,7 +841,7 @@ export const HeatMap = () => {
             setRightPanelStartDate={setRightPanelStartDate}
             setRightPanelEndDate={setRightPanelEndDate}
             state={usState}
-            selectedState={selectedState}
+            currentUsState={currentUsState}
           />
         )}
         {popupVisible &&

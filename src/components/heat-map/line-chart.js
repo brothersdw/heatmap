@@ -35,10 +35,11 @@ export const LineChart = ({
   countyMapData,
   state,
   selectedState,
+  currentUsState,
 }) => {
   const [graphData, setGraphData] = useState([]);
   const [data, setData] = useState();
-  const [currentCounty, setCurrentCounty] = useState(county);
+  const [currentCounty, setCurrentCounty] = useState();
   // const [lineColor, setLineColor] = useState();
   const getRandomColor = () => {
     return `#${Math.random().toString(16).substring(2, 10)}`;
@@ -47,8 +48,6 @@ export const LineChart = ({
     // setLineColor(getRandomColor());
     const getData = async () => {
       //   console.log("Other Map Data:", getOtherData);
-      console.log("County Map data2: ", countyMapData && countyMapData);
-      console.log("testData:", filter);
       // const getGraphData = [];
       // for (let i = 0; state > i; i++) {
       //   const fetchGraphData = await getMapLineGraphData(
@@ -60,87 +59,45 @@ export const LineChart = ({
 
       //   console.log("graphData1:", state[i]);
       // }
+      // const usState = state.filter(s === currentUsState)
       const getGraphData = await getMapLineGraphData(
-        state,
+        currentUsState,
+        county,
         graphStartDate,
         graphEndDate
       );
       // const currentCounty = getGraphData.data.map((gd) =>
       //   gd.filter((d) => d.county === county && d.state_ab ==).map((s) => s.county)
       // )[0][0];
-      const thisGraphData = getGraphData.data.map((gd) => {
-        return gd.map((gdm) => {
-          return {
-            state: gdm.state_ab,
-            county: gdm.county,
-            value: Object.values(
-              JSON.parse(gdm.incidences).filter(
-                (gi) => Object.keys(gi)[0] === disease
-              )[0]
-            )[0],
-          };
-        });
-      });
-      const currentState = String(
-        getGraphData?.data?.map((gd) =>
-          gd.map((d) =>
-            state.filter(
-              (s) =>
-                String(s).toUpperCase() === String(d.state_ab).toUpperCase()
-            )
-          )
-        )[0][0]
-      ).toUpperCase();
-      const currentCounty = String(
-        getGraphData?.data?.map((gd) => {
-          return gd.filter((d) => d.county === county);
-        })[0][0]?.county
-      );
-      // const extractGraphData = getGraphData.data.map((gd) =>
-      //   gd
-      //     .filter((d) => d.county === county)
-      //     .map((c) => JSON.parse(c.incidences))
-      //     .map(
-      //       (i) =>
-      //         Object.values(i).filter(
-      //           (dis) => Object.keys(dis)[0] === disease
-      //         )[0]
-      //     )
-      // );
-      console.log("currentState:", currentState);
-      console.log("currentCounty:", currentCounty);
-      console.log("get graph data:", thisGraphData);
-      const gData = thisGraphData?.data?.filter(
-        (g) => g.county === county && g.state === selectedState
+
+      console.log("lineGraphData1:", getGraphData.data);
+      const lineGraphData = getGraphData?.data?.map(
+        (gd) =>
+          Object.values(
+            JSON.parse(gd.incidences).filter(
+              (i) => Object.keys(i)[0] === disease
+            )[0]
+          )[0]
       );
       // const lineData = gData[0];
       // console.log("lineData:", gData[0]);
+
+      console.log("lineGraphData:", lineGraphData);
+      lineGraphData.map((l) => console.log("line:", l));
       const getCurrentGraphData = () => {
         const lineColor = getRandomColor();
         return {
-          label: currentCounty,
+          label: `${currentUsState} - ${county}`,
           color: "white",
-          data: gData?.map((l) => l.value),
+          data: lineGraphData?.map((l) => l),
           borderColor: lineColor,
           backgroundColor: lineColor,
         };
       };
       // console.log("gData:", gData2);
       const currentGraphData = getCurrentGraphData();
-      // setGraphData((gd) => [...gd, currentGraphData]);
-      console.log("Heatmap Graph Data:", currentGraphData);
-      // const graphDataArrayValues = {
-      //   county: currentCounty,
-      //   disease_values: extractGraphData.map((ed) =>
-      //     ed.map((e) => Object.values(e)[0])
-      //   ),
-      // };
-      currentCounty === county
-        ? setGraphData((g) => [g.data, currentGraphData.map((l) => l.value)])
-        : setGraphData((g) => [...g, currentGraphData]);
-
-      console.log("graph data2:", currentGraphData);
-
+      setGraphData((gd) => [...gd, currentGraphData]);
+      // console.log("Heatmap Graph Data:", currentGraphData);
       const beginDate = new Date(graphStartDate);
       const endingDate = new Date(graphEndDate);
       const diffTime = Math.abs(endingDate - beginDate);
@@ -154,8 +111,8 @@ export const LineChart = ({
           .split("T")[0];
         dayLabels.push(currentDate);
       }
-
-      setData({ labels: dayLabels, datasets: graphData });
+      const lineColor = getRandomColor();
+      setData({ labels: dayLabels, data: graphData });
     };
     getData();
   }, [graphStartDate, graphEndDate, county]);

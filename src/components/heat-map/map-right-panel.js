@@ -13,6 +13,7 @@ export const RightPanel = ({
   countyMapData,
   state,
   selectedState,
+  currentUsState,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
@@ -66,7 +67,7 @@ export const RightPanel = ({
               graphStartDate={rightPanelStartDate}
               graphEndDate={rightPanelEndDate}
               state={state}
-              selectedState={selectedState}
+              currentUsState={currentUsState}
             />
           ) : (
             <div style={{ color: "white", zIndex: 2 }}>Loading Graph...</div>
