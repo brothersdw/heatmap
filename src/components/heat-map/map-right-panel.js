@@ -20,7 +20,7 @@ export const RightPanel = ({
   const date = new Date();
   const dateToISOString = new Date(date.setDate(date.getDate())).toISOString();
   const currentDayStart = dateToISOString.split("T")[0];
-  const currentDayEnd = dateToISOString.split("T")[0];
+  const currentDayEnd = dateToISOString.split("T")[0] + "T23:59:59Z";
   useEffect(() => {
     title !== currentTitle && title ? setIsOpen(true) : setIsOpen(false);
     setCurrentTitle(title);
@@ -33,7 +33,7 @@ export const RightPanel = ({
       secondaryPanelSwitch={isOpen}
       setSecondaryPanelSwitch={setIsOpen}
     >
-      {title && (
+      {county && (
         <>
           {Object.keys(rightPanelInfo).map((r, idx) => {
             if (r !== "components") {
@@ -51,18 +51,18 @@ export const RightPanel = ({
           <DatePicker
             multiSelect
             maxDate={currentDayStart}
+            minDate={currentDayStart}
             date1={rightPanelStartDate}
             date2={rightPanelEndDate}
             setDate1={setRightPanelStartDate}
             setDate2={setRightPanelEndDate}
           />
-          {rightPanelInfo && county ? (
+          {county && rightPanelStartDate && rightPanelEndDate ? (
             <LineChart
               countyMapData={countyMapData}
               currentSwitch={currentSwitch}
               disease={disease}
               county={county}
-              filter={rightPanelInfo}
               chartTitle={title}
               graphStartDate={rightPanelStartDate}
               graphEndDate={rightPanelEndDate}

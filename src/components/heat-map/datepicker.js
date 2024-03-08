@@ -20,7 +20,7 @@ export const DatePicker = ({
             <input
               name="start"
               type="date"
-              max={maxDate}
+              max={date2}
               className="date-picker"
               value={date1}
               onChange={(e) => setDate1(e.target.value)}
@@ -34,6 +34,7 @@ export const DatePicker = ({
               name="end"
               type="date"
               max={maxDate}
+              min={date1}
               className="date-picker"
               value={date2}
               onChange={(e) => setDate2(e.target.value)}
