@@ -2,8 +2,17 @@ import { useState, useEffect } from "react";
 import { DatePicker, SlidingPanel, LineChart } from ".";
 import { getMapLineGraphData } from "../../api/get-map-line-graph-data";
 
+// const getRandomColor = () => {
+//   return `#${Math.random().toString(16).substring(2, 10)}`;
+// };
+
 const getRandomColor = () => {
-  return `#${Math.random().toString(16).substring(2, 10)}`;
+  let letters = "BCDEF".split("");
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * letters.length)];
+  }
+  return color;
 };
 
 export const RightPanel = ({
@@ -15,6 +24,7 @@ export const RightPanel = ({
   setRightPanelEndDate,
   county,
   disease,
+  diseases,
   currentSwitch,
   countyMapData,
   state,
@@ -64,7 +74,7 @@ export const RightPanel = ({
       label: `${currentUsState} - ${county}`,
       color: "white",
       data: lineGraphData?.map((l) => l),
-      borderColor: "black",
+      borderColor: lineColor,
       backgroundColor: lineColor,
     };
 
@@ -143,7 +153,7 @@ export const RightPanel = ({
         label: currentData.label,
         color: "white",
         data: lineGraphData?.map((l) => l),
-        borderColor: "black",
+        borderColor: lineColor,
         backgroundColor: lineColor,
       };
 
@@ -171,7 +181,7 @@ export const RightPanel = ({
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-  }, [rightPanelStartDate, rightPanelEndDate]);
+  }, [rightPanelStartDate, rightPanelEndDate, disease]);
   return (
     <SlidingPanel
       panelClass="right"
@@ -208,8 +218,9 @@ export const RightPanel = ({
               countyMapData={countyMapData}
               currentSwitch={currentSwitch}
               disease={disease}
+              diseases={diseases}
               county={county}
-              chartTitle={title}
+              // chartTitle={title}
               graphData={graphData}
               graphStartDate={rightPanelStartDate}
               graphEndDate={rightPanelEndDate}

@@ -30,7 +30,7 @@ const asyncFunction = async (cb1, cb2) => {
 };
 
 export const LineChart = ({
-  chartTitle,
+  // chartTitle,
   graphStartDate,
   graphEndDate,
   graphData,
@@ -38,6 +38,7 @@ export const LineChart = ({
   filter,
   county,
   disease,
+  diseases,
   currentSwitch,
   countyMapData,
   state,
@@ -51,36 +52,11 @@ export const LineChart = ({
   const [refreshCount, setRefreshCount] = useState(0);
   // const [lineColor, setLineColor] = useState();
 
-  const checkDuplicateDataEntries = async (...initialArray) => {
-    const checkArray = [];
-    // checkArray.push("testy");
-    console.log("test1:", initialArray.length);
-    const mapArray = (valueArray = [], pushArray = []) => {
-      valueArray?.map((v) => {
-        let thisMatch = false;
-        console.log("value array value:", v);
-        const vaState = String(v?.label?.split(" - ")[0]).toUpperCase();
-        const vaCounty = String(v?.label?.split(" - ")[1]).toUpperCase();
-        console.log("vaLabel:", vaState);
-        checkArray.map((c) => {
-          const caState = String(c?.label?.split(" - ")[0]).toUpperCase();
-          console.log("caLabel:", caState);
-          const caCounty = String(c?.label?.split(" - ")[1]).toUpperCase();
-          if (vaState === caState && vaCounty === caCounty) {
-            thisMatch = true;
-          }
-        });
-        if (!thisMatch) {
-          return pushArray.push(v);
-        }
-      });
-    };
-    const test1 = mapArray(initialArray, checkArray);
-    console.log("test array:", test1);
-    return checkArray;
-  };
-
   // const currentGraphData = [];
+
+  const chartTitle = diseases.data.filter(
+    (d) => d.disease_cases_key === disease
+  )[0].disease_description;
 
   const randomNum = (range1, range2) =>
     Math.floor(Math.random() * (range2 - range1 + 1)) + range1;
@@ -107,7 +83,7 @@ export const LineChart = ({
       title: {
         color: "white",
         display: true,
-        // text: `${chartTitle}`,
+        text: `${chartTitle}`,
       },
     },
   };
@@ -119,7 +95,12 @@ export const LineChart = ({
     <div style={{ width: "90%", margin: "auto", textAlign: "center" }}>
       {!isLoading && graphData ? (
         <div
-          style={{ backgroundColor: "white", width: "100%", margin: "auto" }}
+          style={{
+            backgroundColor: "#1c1c1c",
+            border: "2px solid #454545",
+            width: "100%",
+            margin: "auto",
+          }}
         >
           <Line
             options={options}

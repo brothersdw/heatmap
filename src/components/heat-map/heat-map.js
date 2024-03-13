@@ -800,6 +800,7 @@ export const HeatMap = () => {
             }
             currentSwitch={"cases"}
             disease={disease}
+            diseases={diseases}
             county={selectedCounty}
             rightPanelInfo={selectedCases} // Object with properties to display in right panel
             rightPanelStartDate={rightPanelStartDate} // Date picker start date
@@ -823,6 +824,7 @@ export const HeatMap = () => {
             currentSwitch={"genPop"}
             county={selectedCounty}
             disease={disease}
+            diseases={diseases}
             rightPanelInfo={selectedGenPop}
             rightPanelStartDate={rightPanelStartDate}
             rightPanelEndDate={rightPanelEndDate}
@@ -845,6 +847,7 @@ export const HeatMap = () => {
             currentSwitch={"genPopPer"}
             county={selectedCounty}
             disease={disease}
+            diseases={diseases}
             rightPanelInfo={selectedGenPopPer}
             rightPanelStartDate={rightPanelStartDate}
             rightPanelEndDate={rightPanelEndDate}
