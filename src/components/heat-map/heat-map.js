@@ -46,6 +46,13 @@ const getRandomColor = () => {
   return `#${Math.random().toString(16).substring(2, 10)}`;
 };
 
+const createGraphData = (param1) => {
+  return {
+    label: param1.label,
+    datasets: param1.data,
+  };
+};
+
 mapboxgl.accessToken = publicToken; // !Important you have to have this or you will not be able display the map
 
 export const HeatMap = () => {
@@ -584,8 +591,6 @@ export const HeatMap = () => {
 
           map.on("click", `counties-${idx}`, async (e) => {
             setSelectedState("");
-            setSelectedCounty(e.features[0].properties.county); // Set to county that is currently clicked
-            setCurrentUsState(e.features[0].properties.state_ab);
             console.log("current state1:", e.features[0].properties.state_ab);
             const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
             // for the county that is currently clicked. Used in MapPopup components
@@ -607,6 +612,9 @@ export const HeatMap = () => {
                 Cases: friendlyNumber(diseaseCases),
               };
             });
+
+            setSelectedCounty(e.features[0].properties.county); // Set to county that is currently clicked
+            setCurrentUsState(e.features[0].properties.state_ab);
           });
           // }
 
@@ -614,7 +622,6 @@ export const HeatMap = () => {
           map.on("click", `state-${idx}`, (e) => {
             setCases({});
             setSelectedCounty("");
-            setSelectedState(e.features[0].properties.state);
             setCurrentUsState(e.features[0].properties.state_ab);
             setCursorX(e.point.x);
             setCursorY(e.point.y);
@@ -636,10 +643,11 @@ export const HeatMap = () => {
                 Cases: friendlyNumber(diseaseCases),
               };
             });
+
+            setSelectedState(e.features[0].properties.state);
           });
 
           map.on("click", `gen-pop-county-${idx}`, (e) => {
-            setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
             const genPopulation = e.features[0].properties["genPopulation"]; // Set to value of current disease_cases_key
             // for the county the cursor is currently in. Used in Databox and MapPopup components
 
@@ -652,6 +660,8 @@ export const HeatMap = () => {
                 "General Population": friendlyNumber(genPopulation),
               };
             });
+
+            setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
           });
 
           map.on("click", `gen-pop-state-${idx}`, (e) => {
@@ -671,8 +681,7 @@ export const HeatMap = () => {
           });
 
           map.on("click", `gen-pop-per-county-${idx}`, (e) => {
-            setSelectedGenPopPer({});
-            setSelectedCounty(e.features[0].properties.county); // Set to county that the cursor is currently in
+            setSelectedGenPopPer({}); // Set to county that the cursor is currently in
             setCurrentUsState(e.features[0].properties.state_ab);
             const disease_data = diseases.data.filter(
               (d) => d.disease_cases_key === disease
@@ -692,6 +701,7 @@ export const HeatMap = () => {
                 )}%`,
               };
             });
+            setSelectedCounty(e.features[0].properties.county);
           });
 
           map.on("click", `gen-pop-per-state-${idx}`, (e) => {
