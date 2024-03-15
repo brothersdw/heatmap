@@ -22,7 +22,6 @@ export const addMapLayer = (
         // use a numeric value
       ]
     : layerFillColor;
-  console.log("fillColor", fillColor);
   usesStops &&
     layerProperties.stops.map((s) => {
       // Maps over the stops property of the object and pushes each value to fillColor array

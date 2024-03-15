@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { getMapLineGraphData } from "../../api/get-map-line-graph-data";
-import { getCountyMapData } from "../../api/get-counties-mapbox-data";
+import React, { useState } from "react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -24,42 +22,17 @@ ChartJS.register(
   Legend
 );
 
-const asyncFunction = async (cb1, cb2) => {
-  await cb1();
-  cb2();
-};
-
 export const LineChart = ({
-  // chartTitle,
   graphStartDate,
   graphEndDate,
   graphData,
   isLoading,
-  filter,
-  county,
   disease,
   diseases,
-  currentSwitch,
-  countyMapData,
-  state,
-  selectedState,
-  currentUsState,
 }) => {
-  // const [graphData, setGraphData] = useState([]);
-  const [gData, setGData] = useState();
-  const [currentCounty, setCurrentCounty] = useState();
-  const [dateActive, setDateActive] = useState(false);
-  const [refreshCount, setRefreshCount] = useState(0);
-  // const [lineColor, setLineColor] = useState();
-
-  // const currentGraphData = [];
-
   const chartTitle = diseases.data.filter(
     (d) => d.disease_cases_key === disease
   )[0].disease_description;
-
-  const randomNum = (range1, range2) =>
-    Math.floor(Math.random() * (range2 - range1 + 1)) + range1;
 
   const beginDate = new Date(graphStartDate);
   const endingDate = new Date(graphEndDate);
@@ -106,10 +79,8 @@ export const LineChart = ({
             options={options}
             data={data}
             style={{
-              // backgroundColor: "white",
               color: "white",
-              // border: "2px solid gray",
-              width: "90%",
+              width: "100%",
               margin: "auto",
             }}
           />
@@ -120,22 +91,5 @@ export const LineChart = ({
         </div>
       )}
     </div>
-    // <div style={{ color: "white" }}>
-    //   {/* {gData &&
-    //     Object?.values(gData)?.map((g, idx) => {
-    //       if (typeof g === "object") {
-    //         return Object.values(g).map((gd) => {
-    //           if (typeof gd === "object") {
-    //             return Object.values(gd).map((gdo) => {
-    //               return <p>{gdo}</p>;
-    //             });
-    //           }
-    //         });
-    //       } else {
-    //         return <p>{g}</p>;
-    //       }
-    //     })} */}
-    //   test
-    // </div>
   );
 };

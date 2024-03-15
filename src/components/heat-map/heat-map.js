@@ -59,7 +59,6 @@ export const HeatMap = () => {
   const [countyMapData, setCountyMapData] = useState({});
   const [stateMapData, setStateMapData] = useState({});
   const [usState, setUsState] = useState(["fl", "ga"]);
-  const [graphData, setGraphData] = useState([]);
   const [currentUsState, setCurrentUsState] = useState();
   const [selectedCounty, setSelectedCounty] = useState(""); // Selected county for info panel display
   const [selectedState, setSelectedState] = useState(""); // Selected state for info panel display
@@ -74,9 +73,9 @@ export const HeatMap = () => {
       const countyData = await getCountyMapData(usState, currentDayStart); // Await fetch function for map data and set mData to response
       // const countyMapData = countyData.data;
       const stateData = await getStateMapData(usState);
-      const stateMapData = stateData.data;
+      const sMapData = stateData.data;
       setCountyMapData((c) => countyData.data);
-      setStateMapData((s) => stateMapData);
+      setStateMapData((s) => sMapData);
     };
     setData();
   }, [usState]);
@@ -163,11 +162,6 @@ export const HeatMap = () => {
       }
     );
 
-    // console.log("state GenPOp total:", stateGenPopulationTotal);
-    // console.log("county counts:", countyCounts);
-    // console.log("state GenPopPer total:", stateGenPopulationPerSumTotal);
-    // console.log("state GenPopPerTotal total:", stateGenPopulationPerTotal);
-    // console.log("county data:", countyMapData);
     // Reset states
     setSelectedCases({});
     setSelectedGenPop({});
@@ -211,18 +205,18 @@ export const HeatMap = () => {
           "line",
           "white"
         )
-      );
-      map.addLayer(
-        addMapLayer(
-          allStatesFillProperties,
-          "",
-          "none",
-          false,
-          false,
-          "fill",
-          "transparent"
-        )
-      );
+      ) &&
+        map.addLayer(
+          addMapLayer(
+            allStatesFillProperties,
+            "",
+            "none",
+            false,
+            false,
+            "fill",
+            "transparent"
+          )
+        );
 
       map.on("mouseenter", "all-states-fill", (e) => {
         setPopupVisible(true);
@@ -240,20 +234,6 @@ export const HeatMap = () => {
       });
 
       map.on("click", "all-states-fill", (e) => {
-        // console.log(e.features[0].properties.state_ab);
-        // console.log(
-        //   "state bool:",
-        //   String(usState).toUpperCase() !==
-        //     String(e.features[0].properties.state_ab).toUpperCase()
-        // );
-        // if (usState.length > 1) {
-        // const state_ab = e.features[0].properties.state_ab;
-        // setUsState((s) => [...s, state_ab]);
-        // console.log(usState);
-        // }
-        // if (usState.length === 1) {
-        //   console.log("usState:", usState);
-        // console.log("heatmap features:", e.features);
         const stateChosen = usState.filter(
           (s, idx) =>
             String(s).toUpperCase() ===
@@ -263,11 +243,7 @@ export const HeatMap = () => {
         const currentState_ab = String(
           e.features[0].properties.state_ab
         ).toUpperCase();
-        // console.log("state chosen:", stateChosen);
         !stateChosen && setUsState((s) => [...s, currentState_ab]);
-        // console.log("state_ab:", e.features[0].properties.state_ab);
-        // }
-        // console.log("usStates:", usState);
       });
 
       map.on("mouseleave", "all-states-fill", (e) => {
@@ -275,50 +251,164 @@ export const HeatMap = () => {
         setPopupString();
         map.getCanvas().style.cursor = "grab";
       });
+
+      const currentStateMapData = {
+        features: [],
+      };
+      const stateProperties = {
+        properties: [],
+      };
+      const completeStateData = {
+        type: stateMapData?.type,
+        features: [],
+      };
+      const stateCaseCounts = [];
+      const stateCaseCountPers = [];
+      // let completeStateData;
+      usState.map((uss, idx) => {
+        const currentStateCaseCounts = countyMapData?.features
+          ?.filter(
+            (cd) =>
+              String(Object.values(cd)[0].properties.state_ab).toUpperCase() ===
+              String(uss).toUpperCase()
+          )
+          .map((cdo) => Object.values(cdo).map((feat) => feat.properties))[0]
+          .map((prop) => prop[`${disease}`])
+          .reduce((acc, curr) => {
+            return acc + curr;
+          }, 0);
+        const countyCounts = countyMapData?.features
+          ?.filter(
+            (cd) =>
+              String(Object.values(cd)[0].properties.state_ab).toUpperCase() ===
+              String(uss).toUpperCase()
+          )
+          .map((cdo) => Object.values(cdo).map((feat) => feat.properties))[0]
+          .map((prop) => prop[`${disease}`]).length;
+        const currentStateCaseCountsPer =
+          countyMapData?.features
+            ?.filter(
+              (cd) =>
+                String(
+                  Object.values(cd)[0].properties.state_ab
+                ).toUpperCase() === String(uss).toUpperCase()
+            )
+            .map((cdo) => Object.values(cdo).map((feat) => feat.properties))[0]
+            .map((prop) => prop[`${disease}_cases_percentage`])
+            .reduce((acc, curr) => {
+              return acc + curr;
+            }, 0) / countyCounts;
+        stateCaseCountPers.push({
+          state_ab: String(uss).toUpperCase(),
+          [`${disease}_cases_percentage`]: currentStateCaseCountsPer,
+        });
+
+        stateCaseCounts.push({
+          state_ab: String(uss).toUpperCase(),
+          [`${disease}`]: currentStateCaseCounts,
+        });
+        currentStateMapData.features.push(
+          stateMapData?.features?.filter(
+            (s) =>
+              String(s.properties.state_ab).toUpperCase() ===
+              String(uss).toUpperCase()
+          )
+        );
+        stateProperties.properties.push(
+          stateMapData?.features
+            ?.filter(
+              (s) =>
+                String(s.properties.state_ab).toUpperCase() ===
+                String(uss).toUpperCase()
+            )
+            .map((sm) => sm.properties)
+            .map((p) => {
+              return {
+                ...p,
+                genPop: stateGenPopulationTotal?.filter(
+                  (sgp) =>
+                    String(sgp.state_ab).toUpperCase() ===
+                    String(uss).toUpperCase()
+                )[0].genPop,
+                [`${disease}`]: currentStateCaseCounts,
+                [`${disease}_cases_percentage`]: currentStateCaseCountsPer,
+              };
+            })[0]
+        );
+
+        completeStateData?.features?.push(
+          currentStateMapData?.features[idx]?.map((cs) => {
+            return { ...cs, properties: stateProperties?.properties[idx] };
+          })[0]
+        );
+      });
+
       countyMapData &&
         usState.map((uss, idx) => {
-          // countyMapData?.features?.length > 0 &&
-          // console.log("county map feature:", countyMapData.features[idx]);
           const currentCountyMapData = {
             type: countyMapData?.type,
             features:
               countyMapData?.features?.length > 0 &&
               countyMapData?.features[idx],
           };
+
+          const currentStateCaseCount = stateCaseCounts.filter(
+            (sc) =>
+              String(sc.state_ab).toUpperCase() === String(uss).toUpperCase()
+          )[0][`${disease}`];
+
+          const currentStateData = {
+            ...completeStateData,
+            features: [completeStateData?.features[idx]],
+          };
+
+          const currentStateCaseCountPer = stateCaseCountPers.filter(
+            (sc) =>
+              String(sc.state_ab).toUpperCase() === String(uss).toUpperCase()
+          )[0][`${disease}_cases_percentage`];
+
           addMapSource(`counties-${idx}`, "geojson", currentCountyMapData);
-          addMapSource(`state-${idx}`, "geojson", stateMapData);
+          addMapSource(`state-${idx}`, "geojson", currentStateData);
           addMapSource(
             `gen-pop-county-${idx}`,
             "geojson",
             currentCountyMapData
           );
-          addMapSource(`gen-pop-state-${idx}`, "geojson", stateMapData);
+          console.log();
+          addMapSource(`gen-pop-state-${idx}`, "geojson", currentStateData);
           addMapSource(
             `gen-pop-per-county-${idx}`,
             "geojson",
-            countyMapData[idx]
+            currentCountyMapData
           );
-          addMapSource(`gen-pop-per-state-${idx}`, "geojson", stateMapData);
+          addMapSource(`gen-pop-per-state-${idx}`, "geojson", currentStateData);
           //}
 
-          // Adding map layers conditionally {
-          const countyLayer = countiesLayerProperties;
-          countyLayer.id = `counties-${idx + 1}`;
-          countyLayer.source = `counties-${idx + 1}`;
           countiesLayerProperties.id = `counties-${idx}`;
-
-          // console.log("county layer properties:", countyLayer);
           countiesLayerProperties.source = `counties-${idx}`;
           stateLayerProperties.id = `state-${idx}`;
           stateLayerProperties.source = `state-${idx}`;
-          // console.log("index:", idx);
+          genPopCountyLayerProperties.id = `gen-pop-county-${idx}`;
+          genPopCountyLayerProperties.source = `gen-pop-county-${idx}`;
+          genPopStateLayerProperties.id = `gen-pop-state-${idx}`;
+          genPopStateLayerProperties.source = `gen-pop-state-${idx}`;
+          genPopPerCountyLayerProperties.id = `gen-pop-per-county-${idx}`;
+          genPopPerCountyLayerProperties.source = `gen-pop-per-county-${idx}`;
+          genPopPerStateLayerProperties.id = `gen-pop-per-state-${idx}`;
+          genPopPerStateLayerProperties.source = `gen-pop-per-state-${idx}`;
+
           casesSwitch &&
             map.addLayer(
               addMapLayer(countiesLayerProperties, disease, "minzoom"),
               "building"
             ) &&
             map.addLayer(
-              addMapLayer(stateLayerProperties, disease, "maxzoom"),
+              addMapLayer(
+                stateLayerProperties,
+                currentStateCaseCount,
+                "maxzoom",
+                false
+              ),
               "building"
             );
 
@@ -332,12 +422,7 @@ export const HeatMap = () => {
               "building"
             ) &&
             map.addLayer(
-              addMapLayer(
-                genPopStateLayerProperties,
-                stateGenPopulationTotal,
-                "maxzoom",
-                false
-              ),
+              addMapLayer(genPopStateLayerProperties, "genPop", "maxzoom"),
               "building"
             );
           genPopPerSwitch &&
@@ -352,7 +437,7 @@ export const HeatMap = () => {
             map.addLayer(
               addMapLayer(
                 genPopPerStateLayerProperties,
-                stateGenPopulationPerTotal,
+                currentStateCaseCountPer,
                 "maxzoom",
                 false
               ),
@@ -478,7 +563,6 @@ export const HeatMap = () => {
             );
             const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
             // in MapPopup component.
-
             // Set cases to object with cases and disease
             setCases((c) => {
               return {
@@ -518,12 +602,14 @@ export const HeatMap = () => {
             // Set to state that the cursor is currently in
             const state = e.features[0].properties.state;
 
+            const genPop = e.features[0].properties.genPop;
+
             // Set genPop to object with state and "General Population"
             setGenPop((gp) => {
               return {
                 ...gp,
                 State: state,
-                "General Population": friendlyNumber(stateGenPopulationTotal),
+                "General Population": friendlyNumber(genPop),
               };
             });
           });
@@ -545,10 +631,7 @@ export const HeatMap = () => {
             );
             const disease_description = disease_data[0].disease_description;
             const genPopulationPer =
-              (e.features[0].properties[`${disease}`] /
-                e.features[0].properties["genPopulation"]) *
-              100;
-
+              e.features[0].properties[`${disease}_cases_percentage`];
             // Set cases to object with cases and disease
             setGenPopPer((gp) => {
               return {
@@ -574,15 +657,17 @@ export const HeatMap = () => {
             );
             const disease_description = disease_data[0].disease_description;
 
+            const stateCasesPer =
+              e.features[0].properties[`${disease}_cases_percentage`].toFixed(
+                2
+              );
             // Set genPop to object with state and "General Population"
             setGenPopPer((gp) => {
               return {
                 ...gp,
                 State: state,
                 Disease: disease_description,
-                "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
-                  2
-                )}%`,
+                "Case Percentage of Population": `${stateCasesPer}%`,
               };
             });
           });
@@ -591,7 +676,6 @@ export const HeatMap = () => {
 
           map.on("click", `counties-${idx}`, async (e) => {
             setSelectedState("");
-            console.log("current state1:", e.features[0].properties.state_ab);
             const diseaseCases = e.features[0].properties[`${disease}`]; // Set to value of current disease_cases_key
             // for the county that is currently clicked. Used in MapPopup components
 
@@ -670,12 +754,13 @@ export const HeatMap = () => {
             // MapPopup components
 
             setCurrentUsState(e.features[0].properties.state_ab);
+            const genPop = e.features[0].properties.genPop;
 
             // Set selectedGenPop to object with General Population
             setSelectedGenPop((c) => {
               return {
                 ...c,
-                "General Population": friendlyNumber(stateGenPopulationTotal),
+                "General Population": friendlyNumber(genPop),
               };
             });
           });
@@ -717,15 +802,17 @@ export const HeatMap = () => {
             );
             const disease_description = disease_data[0].disease_description; // Grab disease description from disease data. Used
             // in MapPopup component.
+            const stateCasesPer =
+              e.features[0].properties[`${disease}_cases_percentage`].toFixed(
+                2
+              );
 
             // Set selectedGenPop to object with General Population
             setSelectedGenPopPer((c) => {
               return {
                 ...c,
                 Disease: disease_description,
-                "Case Percentage of Population": `${stateGenPopulationPerTotal.toFixed(
-                  2
-                )}%`,
+                "Case Percentage of Population": `${stateCasesPer}%`,
               };
             });
           });
@@ -758,7 +845,6 @@ export const HeatMap = () => {
           });
         });
     });
-    // console.log("isLoading:", isLoading);
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);

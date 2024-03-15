@@ -131,7 +131,7 @@ export const LeftPanel = ({
             ) : (
               <ColorBarLegend
                 rangeNum1={"0"}
-                rangeNum2={"8,000,000+"}
+                rangeNum2={"25,000,000+"}
                 title={"Disease Cases"}
                 colors={[
                   "#ebebeb",
@@ -210,7 +210,7 @@ export const LeftPanel = ({
         ) : (
           <ColorBarLegend
             rangeNum1={"0"}
-            rangeNum2={"50,000,000+"}
+            rangeNum2={"80,000,000+"}
             title={"General Population"}
             colors={[
               "#f2ffa5",

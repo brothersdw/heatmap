@@ -57,7 +57,6 @@ export const RightPanel = ({
       rightPanelEndDate
     );
 
-    console.log("lineGraphData1:", getGraphData.data);
     const lineGraphData = getGraphData?.data?.map(
       (gd) =>
         Object.values(
@@ -67,8 +66,6 @@ export const RightPanel = ({
         )[0]
     );
 
-    console.log("lineGraphData:", lineGraphData);
-    lineGraphData.map((l) => console.log("line:", l));
     const lineColor = getRandomColor();
     const currentGraphData = {
       label: `${currentUsState} - ${county}`,
@@ -92,36 +89,7 @@ export const RightPanel = ({
             return { ...gdm, data: currentGraphData.data };
           })
         : currentGraphData;
-    console.log("current update: ", currentGraphData);
-
-    const dateCountyUpdateSwitch = dateRangeUpdate.length > 0;
-    console.log("current graph data2:", currentGraphData);
-    // console.log("Heatmap Graph Data:", currentGraphData);
-    console.log("dateRange switch:", dateCountyUpdateSwitch);
-    const setData = (existingData, newData) => {
-      // console.log(
-      //   "Label man:",
-      //   String(Object?.values(d)[0]?.label?.split(" - ")[1]).toUpperCase()
-      // );
-      return String(
-        Object?.values(existingData)[0]?.label?.split(" - ")[0]
-      ).toUpperCase() === String(currentUsState).toUpperCase() &&
-        String(county).toUpperCase() ===
-          String(
-            Object?.values(existingData)[0]?.label?.split(" - ")[1]
-          ).toUpperCase()
-        ? newData
-        : [...existingData, newData];
-    };
-
-    // currentUpdate && dateRangeUpdate?.length < 1
-    //   ? setGraphData((g) => currentUpdate)
-    //   :
     setGraphData((g) => [...g, currentUpdate]);
-    // const testy = await checkDuplicateDataEntries(...graphData);
-    // console.log("Dupe entries:", testy);
-    // setGraphData(testy);
-    // setGraphData(graphData.pop());
   };
 
   const addDateData = async () => {
@@ -146,8 +114,6 @@ export const RightPanel = ({
           )[0]
       );
 
-      console.log("lineGraphData:", lineGraphData);
-      lineGraphData.map((l) => console.log("line:", l));
       const lineColor = getRandomColor();
       const currentGraphData = {
         label: currentData.label,
@@ -164,7 +130,6 @@ export const RightPanel = ({
   useEffect(() => {
     title !== currentTitle && title ? setIsOpen(true) : setIsOpen(false);
     setCurrentTitle(title);
-    console.log("right panel open: ", isOpen);
   }, [title]);
   useEffect(() => {
     // setLineColor(getRandomColor());
@@ -189,7 +154,7 @@ export const RightPanel = ({
       secondaryPanelSwitch={isOpen}
       setSecondaryPanelSwitch={setIsOpen}
     >
-      {county && (
+      {rightPanelInfo && (
         <>
           {Object.keys(rightPanelInfo).map((r, idx) => {
             if (r !== "components") {
